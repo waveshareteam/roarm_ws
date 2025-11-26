@@ -1,0 +1,7 @@
+pyserial
+requests
+json ; python_version < "3.10"
+simplejson ; python_version >= "3.10"
+pytest
+flake8
+roarm-sdk==0.1.0
