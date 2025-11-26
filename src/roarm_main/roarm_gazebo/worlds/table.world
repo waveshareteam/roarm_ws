@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://table</uri>
+      <name>table</name>
+      <pose>0.0 -0.84 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <uri>model://hammer</uri>
+      <name>hammer</name>
+      <pose>0.0 -0.85 1.05 0 0 0</pose>
+    </include>
+
+    <include>
+      <uri>model://monkey_wrench</uri>
+      <name>monkey_wrench</name>
+      <pose>0.15 -0.7 1.05 0 0 1.571</pose>
+    </include>
+
+    <!-- <include>
+      <uri>model://Apriltag36_11_00000</uri>
+      <name>Apriltag36_11_00000</name>
+      <pose>0.0 -0.85 1.25 0 0 0</pose>
+    </include> -->
+          
+    <physics type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <gravity>0 0 0</gravity>
+      <shadows>false</shadows>
+    </physics>
+<plugin name="gazebo_link_attacher" filename="libgazebo_link_attacher.so"/>
+      
+  </world>
+</sdf>

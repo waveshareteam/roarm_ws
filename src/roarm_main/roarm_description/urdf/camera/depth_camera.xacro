@@ -1,0 +1,77 @@
+<?xml version="1.0" ?>
+<robot name="depth_camera" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<xacro:macro name="oak" params="use_gazebo *parent_link *joint_pose">
+
+<xacro:if value="${use_gazebo}">
+
+<link name="oak_base_hand">
+  <inertial>
+    <origin xyz="0.0085 0 0" rpy="0 0 0" />
+    <mass value="0.043316" />
+    <inertia ixx="3.27216283333333E-05" ixy="0" ixz="0" iyy="3.87317233333333E-06" iyz="0" izz="3.09348433333333E-05"  />
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find ugv_description)/meshes/sensors/3d_camera_link.stl" />
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find ugv_description)/meshes/sensors/3d_camera_link.stl" />
+    </geometry>
+  </collision>
+</link>
+
+<joint name="oak_base_hand_joint" type="fixed">
+  <xacro:insert_block name="joint_pose"/>
+  <xacro:insert_block name="parent_link"/>
+  <child link="oak_base_hand" />
+  <axis xyz="0 0 0" />
+</joint>
+
+<link name="depth_camera_link"></link>
+  
+<joint name="depth_camera_link_joint" type="fixed">
+  <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708" />
+  <parent link="oak_base_hand" />
+  <child link="depth_camera_link" />
+  <axis xyz="0 0 0" />
+</joint>
+</xacro:if>
+
+<xacro:unless value="${use_gazebo}">
+<link name="depth_camera_link">
+  <inertial>
+    <origin xyz="0.0085 0 0" rpy="0 0 0" />
+    <mass value="0.043316" />
+    <inertia ixx="3.27216283333333E-05" ixy="0" ixz="0" iyy="3.87317233333333E-06" iyz="0" izz="3.09348433333333E-05"  />
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find ugv_description)/meshes/sensors/3d_camera_link.stl" />
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find ugv_description)/meshes/sensors/3d_camera_link.stl" />
+    </geometry>
+  </collision>
+</link>
+
+<joint name="depth_camera_link_joint" type="fixed">
+  <xacro:insert_block name="joint_pose"/>
+  <xacro:insert_block name="parent_link"/>
+  <child link="depth_camera_link" />
+  <axis xyz="0 0 0" />
+</joint>
+</xacro:unless>
+
+ </xacro:macro>
+</robot>
+

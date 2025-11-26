@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+<gazebo reference="cam_base_hand">
+  <sensor name="cam" type="camera">
+    <always_on>true</always_on>
+    <visualize>true</visualize>
+    <update_rate>30</update_rate>
+    <camera name="cam">
+      <horizontal_fov>1.2</horizontal_fov>
+      <image>
+        <width>640</width>
+        <height>480</height>
+        <format>RGB8</format>
+      </image>
+      <clip>
+        <near>0.02</near>
+        <far>8</far>
+      </clip>
+      <noise>
+        <type>gaussian</type>
+        <mean>0.0</mean>
+        <stddev>0.007</stddev>
+      </noise>
+    </camera>
+    <plugin name="camera_driver" filename="libgazebo_ros_camera.so">
+      <ros>
+      </ros>
+      <min_depth>0.01</min_depth>  
+      <max_depth>8.0</max_depth> 
+      <frame_name>camera_link</frame_name>
+    </plugin>
+  </sensor>
+</gazebo>  
+
+</robot>

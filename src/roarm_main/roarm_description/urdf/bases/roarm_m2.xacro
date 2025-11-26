@@ -1,0 +1,175 @@
+<?xml version="1.0" ?>
+<robot name="roarm_m2" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:arg name="add_depth_camera" default="false"/>
+<xacro:property name="add_depth_camera" value="$(arg add_depth_camera)"/>
+
+<xacro:include filename="$(find roarm_description)/urdf/materials.xacro" />
+<xacro:include filename="$(find roarm_description)/urdf/gazebo/roarm_m2.trans" />
+<xacro:include filename="$(find roarm_description)/urdf/gazebo/roarm_m2.gazebo" />
+
+<!-- <xacro:if value="${add_depth_camera}">
+<xacro:include filename="$(find roarm_description)/urdf/camera/depth_camera.xacro" />
+<xacro:include filename="$(find roarm_description)/urdf/camera/depth_camera.gazebo.xacro" />
+<xacro:oak use_gazebo="true">
+  <parent link="link3" />
+  <origin xyz="-0.06 -0.2 0" rpy="1.5708 0 -1.5708" />
+</xacro:oak>  
+</xacro:if> -->
+
+<link name="world"></link>
+
+<link name="base_link">
+  <inertial>
+    <origin xyz="0.0032 0 0.04" rpy="0 0 0" />
+    <mass value="0.2562183" />
+    <inertia ixx="0.00029211" ixy="0" ixz="0" iyy="0.00035719" iyz="0" izz="0.000349421" />
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/base_link.stl"  scale="1.0 1.0 1.0"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/base_link.stl"  scale="1.0 1.0 1.0"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link1">
+  <inertial>
+    <origin xyz="0 0 -0.015" rpy="0 0 0" />
+    <mass value="0.0729177" />
+    <inertia ixx="4.68465E-05" ixy="0" ixz="0" iyy="3.32107E-05" iyz="0" izz="5.01023E-05" />
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry> 
+      <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/link1.stl"  scale="1.0 1.0 1.0"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/link1.stl"  scale="1.0 1.0 1.0"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link2">
+  <inertial>
+    <origin xyz="0.122 0 0" rpy="0 0 0" />
+    <mass value="0.0703216" />
+    <inertia ixx="5.46501E-05" ixy="0" ixz="0" iyy="0.000423091" iyz="0" izz="0.000404557" />
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/link2.stl"  scale="1.0 1.0 1.0"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/link2.stl"  scale="1.0 1.0 1.0"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link3">
+  <inertial>
+    <origin xyz="0.002 -0.13687 0.0059" rpy="0 0 0" />
+    <mass value="0.0269773" />
+    <inertia ixx="0.000199591" ixy="0" ixz="0" iyy="8.01674E-06" iyz="0" izz="0.000196918" />
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/link3.stl"  scale="1.0 1.0 1.0"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/link3.stl"  scale="1.0 1.0 1.0"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="gripper_link">
+  <inertial>
+    <origin xyz="0.029 0.0027 -0.00078" rpy="0 0 0" />
+    <mass value="0.0028708" />
+    <inertia ixx="5.23216E-07" ixy="0" ixz="0" iyy="1.82071E-06" iyz="0" izz="1.60231E-06" />
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/gripper_link.stl"  scale="1.0 1.0 1.0"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/gripper_link.stl"  scale="1.0 1.0 1.0"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="hand_tcp"></link>
+
+<joint name="world_to_base_link" type="fixed">
+  <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+  <parent link="world"/>
+  <child link="base_link"/>
+  <axis xyz="0.0 0.0 1.0"/>
+</joint>  
+  
+<joint name="base_link_to_link1" type="revolute">
+  <origin xyz="0.0100000008759151 0 0.123059270461044" rpy="0 0 0" />
+  <parent link="base_link" />
+  <child link="link1" />
+  <axis xyz="0 0 1" />
+  <limit lower="-3.1416" upper="3.1416" effort="0" velocity="0" />
+</joint>
+
+<joint name="link1_to_link2" type="revolute">
+  <origin xyz="0 0 0" rpy="-1.5708 -1.5708 0" />
+  <parent link="link1" />
+  <child link="link2" />
+  <axis xyz="0 0 1" />
+  <limit lower="-1.5708" upper="1.5708" effort="0" velocity="0" />
+</joint>
+
+<joint name="link2_to_link3" type="revolute">
+  <origin xyz="0.236815132922094 0.0300023995170449 0" rpy="0 0 1.5708" />
+  <parent link="link2" />
+  <child  link="link3" />
+  <axis xyz="0 0 1" />
+  <limit lower="-1" upper="2.95" effort="0" velocity="0" />
+</joint>
+
+<joint name="link3_to_gripper_link" type="revolute">
+  <origin xyz="0.002906 -0.21599 -0.00066683" rpy="-1.5708 0 -1.5708" />
+  <parent link="link3" />
+  <child link="gripper_link" />
+  <axis xyz="0 0 1" />
+  <limit lower="0" upper="1.5" effort="0" velocity="0" />
+</joint>
+
+<joint name="link3_to_hand_tcp" type="fixed">
+  <origin xyz="0.002 -0.2802 0" rpy="1.5708 0 -1.5708" />
+  <parent link="link3" />
+  <child link="hand_tcp" />
+  <axis xyz="0 0 0" />
+</joint>
+  
+</robot>

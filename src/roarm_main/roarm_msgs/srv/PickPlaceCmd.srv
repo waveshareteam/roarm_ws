@@ -1,0 +1,7 @@
+# PickPlaceCmd
+int32 cmd  #cmd 1:pick  2:place
+int32 target  #target 
+float32 gripper  #gripper 
+---
+bool success    
+string message  

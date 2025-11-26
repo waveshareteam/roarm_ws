@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="roarm_m2">
+
+<xacro:arg name="ros2_control_plugin" default="FakeSystem"/>
+<xacro:property name="ros2_control_plugin" value="$(arg ros2_control_plugin)"/>
+
+<xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+<!-- Import roarm_m3 urdf file -->
+<xacro:include filename="$(find roarm_description)/urdf/bases/roarm_m2.xacro" />
+<xacro:include filename="roarm_m2.ros2_control.xacro" />
+
+<xacro:roarm_m2_ros2_control name="$(arg ros2_control_plugin)" initial_positions_file="$(arg initial_positions_file)"/>
+
+</robot>

@@ -1,0 +1,13 @@
+sensors:
+  - depth_image
+
+depth_image:
+    sensor_plugin: occupancy_map_monitor/DepthImageOctomapUpdater
+    image_topic: /oako/depth/image_rawuu
+    queue_size: 5
+    near_clipping_plane_distance: 0.3
+    far_clipping_plane_distance: 5.0
+    shadow_threshold: 0.2
+    padding_scale: 1.0
+    max_update_rate: 1.0
+    filtered_cloud_topic: /oako/pointsuu

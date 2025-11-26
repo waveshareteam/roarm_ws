@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>roarm_moveit_mtc_demo</name>
+  <version>0.0.0</version>
+  <description>roarm demo tasks illustrating various capabilities of MTC.</description>
+  <maintainer email="effectsmachine@outlook.com">roarm</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>generate_parameter_library</depend>
+  <depend>apriltag_msgs</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_ros_planning_interface</depend>
+  <depend>moveit_task_constructor_core</depend>
+  <exec_depend>moveit_configs_utils</exec_depend>
+  <exec_depend>moveit_task_constructor_capabilities</exec_depend>
+  <exec_depend>py_binding_tools</exec_depend>
+
+  <export>
+        <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,77 @@
+<?xml version="1.0" ?>
+<robot name="camera" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<xacro:macro name="cam" params="use_gazebo *parent_link *joint_pose">
+
+<xacro:if value="${use_gazebo}">
+
+<link name="cam_base_hand">
+  <inertial>
+    <origin xyz="0.009 0 0" rpy="0 0 0" />
+    <mass value="0.0048957" />
+    <inertia ixx="4.89978E-07" ixy="0" ixz="0" iyy="3.75712E-07" iyz="0" izz="3.95703E-07" />
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find ugv_description)/meshes/sensors/pt/pt_camera_link.stl" />
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find ugv_description)/meshes/sensors/pt/pt_camera_link.stl" />
+    </geometry>
+  </collision>
+</link>
+
+<joint name="cam_base_hand_joint" type="fixed">
+  <xacro:insert_block name="joint_pose"/>
+  <xacro:insert_block name="parent_link"/>
+  <child link="cam_base_hand" />
+  <axis xyz="0 0 0" />
+</joint>
+
+<link name="camera_link"></link>
+  
+<joint name="camera_link_joint" type="fixed">
+  <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708" />
+  <parent link="cam_base_hand" />
+  <child link="camera_link" />
+  <axis xyz="0 0 0" />
+</joint>
+</xacro:if>
+
+<xacro:unless value="${use_gazebo}">
+<link name="camera_link">
+  <inertial>
+    <origin xyz="0.009 0 0" rpy="0 0 0" />
+    <mass value="0.0048957" />
+    <inertia ixx="4.89978E-07" ixy="0" ixz="0" iyy="3.75712E-07" iyz="0" izz="3.95703E-07" />
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find ugv_description)/meshes/sensors/pt/pt_camera_link.stl" />
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="file://$(find ugv_description)/meshes/sensors/pt/pt_camera_link.stl" />
+    </geometry>
+  </collision>
+</link>
+
+<joint name="camera_link_joint" type="fixed">
+  <xacro:insert_block name="joint_pose"/>
+  <xacro:insert_block name="parent_link"/>
+  <child link="camera_link" />
+  <axis xyz="0 0 0" />
+</joint>
+</xacro:unless>
+
+ </xacro:macro>
+</robot>
+

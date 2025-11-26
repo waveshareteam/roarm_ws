@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="roarm_m3">
+
+<xacro:arg name="ros2_control_plugin" default="FakeSystem"/>
+<xacro:property name="ros2_control_plugin" value="$(arg ros2_control_plugin)"/>
+
+<xacro:arg name="add_depth_camera" default="false"/>
+<xacro:property name="add_depth_camera" value="$(arg add_depth_camera)"/>
+
+<xacro:include filename="$(find roarm_description)/urdf/bases/roarm_m3.xacro" />
+<xacro:add_depth_camera add_depth_camera="$(arg add_depth_camera)"/>
+
+<xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+<xacro:include filename="roarm_m3.ros2_control.xacro" />
+<xacro:roarm_m3_ros2_control name="$(arg ros2_control_plugin)" initial_positions_file="$(arg initial_positions_file)"/>
+
+</robot>

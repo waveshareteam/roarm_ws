@@ -1,0 +1,59 @@
+<?xml version="1.0" ?>
+<robot name="roarm_m2" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+<transmission name="base_link_to_link1_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="base_link_to_link1">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="base_link_to_link1_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="link1_to_link2_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="link1_to_link2">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="link1_to_link2_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="link2_to_link3_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="link2_to_link3">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="link2_to_link3_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="link3_to_gripper_link_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="link3_to_gripper_link">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="link3_to_gripper_link_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="link3_to_hand_tcp_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="link3_to_hand_tcp">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="link3_to_hand_tcp_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+</robot>
