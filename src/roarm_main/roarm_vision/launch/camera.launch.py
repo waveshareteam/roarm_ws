@@ -18,14 +18,14 @@ from launch_ros.descriptions import ComposableNode
 def generate_launch_description():
 
     # Get the package directory for the ugv_vision package
-    pkg_dir = get_package_share_directory('roarm_vision')
+    pkg_dir = get_package_share_directory('ugv_vision')
     # Get the path to the params.yaml file
     param_file = os.path.join(pkg_dir, 'config', 'params.yaml') 
 
     camera_node = Node(
             package='v4l2_camera', 
             executable='v4l2_camera_node', 
-            name='usb_cam',
+            name='v4l2_camera',
             parameters= [param_file]
             #remappings=camera.remappings
     )

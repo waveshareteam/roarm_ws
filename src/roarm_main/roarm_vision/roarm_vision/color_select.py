@@ -8,29 +8,23 @@ import numpy as np
 class LabTrackbarNode(Node):
     def __init__(self):
         super().__init__('lab_trackbar_node')
-        self.subscription = self.create_subscription(
-            Image,
-            '/image_raw',  # 根据你的话题修改
-            self.image_callback,
-            10
-        )
+        self.declare_parameter('image_topic', '/image_raw')
+        image_topic = self.get_parameter('image_topic').value
+        self.image_raw_subscription = self.create_subscription(Image,image_topic, self.image_callback,10)
+        
         self.bridge = CvBridge()
         self.frame = None
 
-        # 创建滑条窗口
         cv2.namedWindow("Lab Trackbars")
-        # L 通道 0-255
-        cv2.createTrackbar("L Lower", "Lab Trackbars", 160, 255, lambda x: None)
+        cv2.createTrackbar("L Lower", "Lab Trackbars", 0, 255, lambda x: None)
         cv2.createTrackbar("L Upper", "Lab Trackbars", 255, 255, lambda x: None)
-        # a 通道 0-255
-        cv2.createTrackbar("a Lower", "Lab Trackbars", 0, 255, lambda x: None)
+        cv2.createTrackbar("a Lower", "Lab Trackbars", 170, 255, lambda x: None)
         cv2.createTrackbar("a Upper", "Lab Trackbars", 255, 255, lambda x: None)
-        # b 通道 0-255
-        cv2.createTrackbar("b Lower", "Lab Trackbars", 0, 255, lambda x: None)
+        cv2.createTrackbar("b Lower", "Lab Trackbars", 170, 255, lambda x: None)
         cv2.createTrackbar("b Upper", "Lab Trackbars", 255, 255, lambda x: None)
 
-        # 定时器刷新窗口
-        self.create_timer(0.03, self.update_display)  # 约 30 fps
+        self.create_timer(0.03, self.update_display)  
+        self._exit_requested = False
 
     def image_callback(self, msg):
         self.frame = self.bridge.imgmsg_to_cv2(msg, "bgr8")
@@ -41,7 +35,6 @@ class LabTrackbarNode(Node):
 
         lab = cv2.cvtColor(self.frame, cv2.COLOR_BGR2LAB)
 
-        # 获取滑条值
         lL = cv2.getTrackbarPos("L Lower", "Lab Trackbars")
         lU = cv2.getTrackbarPos("L Upper", "Lab Trackbars")
         aL = cv2.getTrackbarPos("a Lower", "Lab Trackbars")
@@ -62,17 +55,17 @@ class LabTrackbarNode(Node):
         if key == 27:
             self.get_logger().info("ESC pressed, shutting down...")
             cv2.destroyAllWindows()
-            rclpy.shutdown()
-
+            print("Lower LAB:", lower)
+            print("Upper LAB:", upper)
+            self._exit_requested = True
 
 def main(args=None):
     rclpy.init(args=args)
     node = LabTrackbarNode()
-    rclpy.spin(node)
+    try:
+        while rclpy.ok() and not node._exit_requested:
+            rclpy.spin_once(node, timeout_sec=0.1)
+    except KeyboardInterrupt:
+        pass
     node.destroy_node()
-    cv2.destroyAllWindows()
     rclpy.shutdown()
-
-
-if __name__ == '__main__':
-    main()

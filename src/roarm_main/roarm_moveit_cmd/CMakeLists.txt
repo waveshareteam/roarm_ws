@@ -77,7 +77,7 @@ ament_target_dependencies(roarmserver
 # Install targets
 install(TARGETS getposecmd_moveit getposecmd_tf setgrippercmd roarmserver DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY launch config rviz DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch rviz DESTINATION share/${PROJECT_NAME})
 
 install(DIRECTORY include/ DESTINATION include)
 

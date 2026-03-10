@@ -65,6 +65,12 @@ gst_command = [
 
 gst_process = subprocess.Popen(gst_command, stdin=subprocess.PIPE)
 
+K = np.array([
+    [289.11451,   0.     , 347.23664],
+    [  0.     , 289.75319, 235.67429],
+    [  0.     ,   0.     ,   1.     ]
+], dtype=np.float64)
+
 def compute_3d_translation(delta_x, delta_y, Z, K):
     fx, fy = K[0, 0], K[1, 1] 
     cx, cy = K[0, 2], K[1, 2]  
@@ -74,20 +80,14 @@ def compute_3d_translation(delta_x, delta_y, Z, K):
     
     return delta_X, delta_Y
 
-K = np.array([
-    [289.11451,   0.     , 347.23664],
-    [  0.     , 289.75319, 235.67429],
-    [  0.     ,   0.     ,   1.     ]
-], dtype=np.float64)
-
-class ApriltagTrackPid(Node):
+class ApriltagDetect(Node):
     def __init__(self):
-        super().__init__('apriltag_track_pid')
+        super().__init__('apriltag_detect')
         # Create a subscription to the image_raw topic
         # self.image_rect_subscription = self.create_subscription(Image,'/image_rect', self.image_callback,10)
         self.image_raw_subscription = self.create_subscription(Image,'/image_raw', self.image_callback,10)
-        # Create a publisher to the apriltag_track_pid/result topic
-        self.apriltag_track_pid_publisher = self.create_publisher(Image, '/apriltag_track_pid/result', 10)
+        # Create a publisher to the apriltag_detect/result topic
+        self.apriltag_detect_publisher = self.create_publisher(Image, '/apriltag_detect/result', 10)
         # Create a CvBridge object to convert between ROS Image messages and OpenCV images
         self.bridge = CvBridge()
         # Create an apriltag detector object
@@ -123,6 +123,12 @@ class ApriltagTrackPid(Node):
         self.cam_frame = self.get_parameter('cam_frame').value
         self.tag_frame = self.get_parameter('tag_frame').value
 
+        fx = K[0, 0]
+        fy = K[1, 1]
+        cx = K[0, 2]
+        cy = K[1, 2]
+        self.camera_params = (fx, fy, cx, cy)
+
     def timer_callback(self):
         if self.moving and self.move_end_time is not None:
             now = self.get_clock().now().nanoseconds
@@ -156,13 +162,7 @@ class ApriltagTrackPid(Node):
         roi = gray[140:340,120:520]
 
         # Detect apriltags in the image
-        fx = K[0, 0]
-        fy = K[1, 1]
-        cx = K[0, 2]
-        cy = K[1, 2]
-        camera_params = (fx, fy, cx, cy)
-
-        results = self.detector.detect(roi, False, camera_params, self.tag_size)
+        results = self.detector.detect(roi, False, self.camera_params, self.tag_size)
 
         # Loop through the detected apriltags
         if results:
@@ -192,12 +192,12 @@ class ApriltagTrackPid(Node):
                     self.get_logger().warn("solvePnPRansac failed.")
                     return
                 else:
-                    # 输出内点数量
+                    # Output the number of interior points
 
                     n_inliers = 0 if inliers is None else len(inliers)
                     # self.get_logger().info(f"PnPRansac success with {n_inliers} inliers")
 
-                    # 2. （可选）使用 LM 优化内点集进一步 refine
+                    # 2. (Optional) Further refine the interior point set using LM optimization.
                     try:
                         rvec, tvec = cv2.solvePnPRefineLM(
                             object_pts[inliers[:, 0]], image_pts[inliers[:, 0]],
@@ -206,31 +206,31 @@ class ApriltagTrackPid(Node):
                     except Exception:
                         pass
                     
-                    # 3. 强制旋转矩阵正交化（避免数值漂移）
+                    # 3. Force rotation matrix orthogonalization (to avoid numerical drift)
                     R, _ = cv2.Rodrigues(rvec)
                     U, _, Vt = np.linalg.svd(R)
                     R_ortho = U @ Vt
                     rvec, _ = cv2.Rodrigues(R_ortho)
 
-                    # 4. 计算重投影误差
+                    # 4. Calculate reprojection error
                     proj, _ = cv2.projectPoints(object_pts, rvec, tvec, cam, dist)
                     err = np.linalg.norm(proj.reshape(-1, 2) - image_pts, axis=1)
                     # self.get_logger().info(f"mean reproj err = {err.mean():.2f}px")
 
-                    # 5. 提取平移结果
+                    # 5. Extract translation result
                     x_m, y_m, z_m = tvec.flatten()
                     # self.get_logger().info(f"tvec = ({x_m:.3f}, {y_m:.3f}, {z_m:.3f})")
-                    # 后续继续使用 R_ortho / tvec 发布 TF 或姿态即可
+                    # Continue using R_ortho / tvec to publish TF or poses.
 
                     twist = Twist()
                     move_duration = 0.0
 
-                    if y_m < -0.05:  # 目标太远
-                        self.get_logger().info("The goal is too far, move forward a little")
+                    if y_m < -0.05:  # The target is too far away
+                        self.get_logger().info("The target is too far, move forward a little")
                         twist.linear.x = 0.1
                         move_duration = self.compute_move_duration(y_m)
 
-                    elif y_m > 0.02:  # 目标太近
+                    elif y_m > 0.02:  # The target is too close
                         self.get_logger().info("The target is too close, step back a little")
                         twist.linear.x = -0.1
                         move_duration = self.compute_move_duration(y_m)
@@ -239,17 +239,16 @@ class ApriltagTrackPid(Node):
                         twist.linear.x = 0.0
                         move_duration = 0.0
 
-                    # 如果需要移动
+                    # If you need to move
                     if move_duration > 0:
                         self.moving = True
                         self.move_end_time = self.get_clock().now().nanoseconds + int(move_duration * 1e9)
                         self.current_twist = twist
                     else:
-                        # 停止
                         self.moving = False
                     # self.cmd_pub.publish(twist)
                         
-                # 调整姿态方向
+                # Adjust attitude and direction
                 R_flip = np.array([
                     [1,  0,  0],
                     [0, -1,  0],
@@ -273,10 +272,10 @@ class ApriltagTrackPid(Node):
                 pitch = 0.0
                 # yaw = 0.0
 
-                # 用修正后的欧拉角重新生成旋转矩阵
+                # Regenerate the rotation matrix using the corrected Euler angles.
                 R_fixed = Rscipy.from_euler('xyz', [roll, pitch, yaw]).as_matrix()
                 R = R_fixed
-                # 转换为四元数
+                # Convert to quaternion
                 rot = Rscipy.from_matrix(R)
                 qx, qy, qz, qw = rot.as_quat()
 
@@ -314,16 +313,16 @@ class ApriltagTrackPid(Node):
         # Convert the OpenCV image back to a ROS Image message
         result_img_msg = self.bridge.cv2_to_imgmsg(frame, encoding="bgr8")                                                                                      
         # Publish the result image message
-        self.apriltag_track_pid_publisher.publish(result_img_msg)
+        self.apriltag_detect_publisher.publish(result_img_msg)
 
 def main(args=None):
     # Initialize the ROS client library
     rclpy.init(args=args)
-    apriltag_track_pid = ApriltagTrackPid()
+    apriltag_detect = ApriltagDetect()
     # Spin the node
-    rclpy.spin(apriltag_track_pid)
+    rclpy.spin(apriltag_detect)
     # Destroy the node
-    apriltag_track_pid.destroy_node()
+    apriltag_detect.destroy_node()
     # Shutdown the ROS client library
     rclpy.shutdown()
 

@@ -86,6 +86,7 @@ class OakYoloNode(Node):
         self.create_pipeline()
 
         self.timer = self.create_timer(0.03, self.process_frames)  # 30 FPS
+        self.camera_frame = "depth_camera_link" 
 
     def create_pipeline(self):
         pipeline = dai.Pipeline()
@@ -195,7 +196,6 @@ class OakYoloNode(Node):
                 center_x = int((x1+x2)/2)
                 center_y = int((y1+y2)/2)
 
-                # === 绘制矩形或多边形 ===
                 corners = np.array([[x1, y1], [x2, y1], [x2, y2], [x1, y2]], dtype=np.int32)
                 cv2.polylines(frame, [corners], isClosed=True, color=(0, 255, 0), thickness=2)
                 cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
@@ -204,34 +204,32 @@ class OakYoloNode(Node):
 
                 t = TransformStamped()
                 t.header.stamp = self.get_clock().now().to_msg()
-                t.header.frame_id = "depth_camera_link" 
+                t.header.frame_id = self.camera_frame 
                 # t.child_frame_id = f"object_{detection.label}"
                 t.child_frame_id = f"object_1"
                 t.transform.translation.x = det_msg.position.x
                 t.transform.translation.y = det_msg.position.y-0.03
                 t.transform.translation.z = det_msg.position.z+0.03                
                     
-                # === ��̬���㣺ͨ�����߱ȹ��� yaw �Ƕ� ===
                 # bbox_width = detection.xmax - detection.xmin
                 # bbox_height = detection.ymax - detection.ymin
                 # if bbox_height > 0:
                 #     aspect_ratio = bbox_width / bbox_height
                 # else:
-                #     aspect_ratio = 1.0  # ��ֹ��0
+                #     aspect_ratio = 1.0  
 
                 # if aspect_ratio > 1.5:
-                #     estimated_yaw_deg = 90.0  # ���
+                #     estimated_yaw_deg = 90.0  
                 # elif aspect_ratio < 0.66:
-                #     estimated_yaw_deg = 0.0   # ����
+                #     estimated_yaw_deg = 0.0   
                 # else:
-                #     estimated_yaw_deg = 45.0  # ��б
+                #     estimated_yaw_deg = 45.0 
 
                 # import math
                 # yaw = 3.1415926+math.radians(estimated_yaw_deg)
                 # roll = 0.0
                 # pitch = 1.571
                 # R = Rscipy.from_euler('xyz', [roll, pitch, yaw]).as_matrix()
-                # # 转换为四元数
                 # rot = Rscipy.from_matrix(R)
                 # qx, qy, qz, qw = rot.as_quat()
 

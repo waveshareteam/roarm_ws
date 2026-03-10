@@ -282,7 +282,7 @@ rtspAuthMethods: [basic]
 # Global settings -> RTMP server
 
 # Enable publishing and reading streams with the RTMP protocol.
-rtmp: yes
+rtmp: false
 # Address of the RTMP listener. This is needed only when encryption is "no" or "optional".
 rtmpAddress: :1935
 # Encrypt connections with TLS (RTMPS).
@@ -302,7 +302,7 @@ rtmpServerCert: server.crt
 # Global settings -> HLS server
 
 # Enable reading streams with the HLS protocol.
-hls: yes
+hls: false
 # Address of the HLS listener.
 hlsAddress: :8880
 # Enable TLS/HTTPS on the HLS server.
@@ -406,17 +406,20 @@ webrtcICEServers2: []
   # password: ''
   # clientOnly: false
 # Time to wait for the WebRTC handshake to complete.
-webrtcHandshakeTimeout: 10s
+# webrtcHandshakeTimeout: 10s
+webrtcHandshakeTimeout: 5s
 # Maximum time to gather video tracks.
-webrtcTrackGatherTimeout: 2s
+# webrtcTrackGatherTimeout: 2s
+webrtcTrackGatherTimeout: 1s
 # The maximum time to gather STUN candidates.
-webrtcSTUNGatherTimeout: 5s
+# webrtcSTUNGatherTimeout: 5s
+webrtcSTUNGatherTimeout: 2s
 
 ###############################################
 # Global settings -> SRT server
 
 # Enable publishing and reading streams with the SRT protocol.
-srt: yes
+srt: false
 # Address of the SRT listener.
 srtAddress: :8890
 

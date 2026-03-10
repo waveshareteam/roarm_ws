@@ -68,7 +68,13 @@ gst_command = [
     'rtspclientsink', 'location=rtsp://localhost:8554/cam', 'latency=0'
 ]
 
-# gst_process = subprocess.Popen(gst_command, stdin=subprocess.PIPE)
+gst_process = subprocess.Popen(gst_command, stdin=subprocess.PIPE)
+
+K = np.array([
+    [289.11451,   0.     , 347.23664],
+    [  0.     , 289.75319, 235.67429],
+    [  0.     ,   0.     ,   1.     ]
+], dtype=np.float64)
 
 def compute_3d_translation(delta_x, delta_y, Z, K):
     fx, fy = K[0, 0], K[1, 1]  
@@ -78,12 +84,6 @@ def compute_3d_translation(delta_x, delta_y, Z, K):
     delta_Y = (delta_y * Z) / fy 
     
     return delta_X, delta_Y
-
-K = np.array([
-    [289.11451,   0.     , 347.23664],
-    [  0.     , 289.75319, 235.67429],
-    [  0.     ,   0.     ,   1.     ]
-], dtype=np.float64)
 
 def order_points(pts):
     rect = np.zeros((4, 2), dtype="float32")
@@ -95,18 +95,17 @@ def order_points(pts):
     rect[3] = pts[np.argmax(diff)]  # bottom-left
     return rect
 
-class ApriltagTrackPid(Node):
+class ColorBlockDetect(Node):
     def __init__(self):
-        super().__init__('apriltag_track_pid')
+        super().__init__('colorblock_detect')
         # Create a subscription to the image_raw topic
         # self.image_rect_subscription = self.create_subscription(Image,'/image_rect', self.image_callback,10)
         self.image_raw_subscription = self.create_subscription(Image,'/image_raw', self.image_callback,10)
-        # Create a publisher to the apriltag_track_pid/result topic
-        self.apriltag_track_pid_publisher = self.create_publisher(Image, '/apriltag_track_pid/result', 10)
+        # Create a publisher to the colorblock_detect/result topic
+        self.colorblock_detect_publisher = self.create_publisher(Image, '/colorblock_detect/result', 10)
         # Create a CvBridge object to convert between ROS Image messages and OpenCV images
         self.bridge = CvBridge()
-        # Create an apriltag detector object
-        # self.detector = apriltag("tag36h11")
+
 
         # Declare parameters for lower and upper hue, saturation, and value
         self.declare_parameter("lower_l", 110, ParameterDescriptor(description="Lower L"))
@@ -124,11 +123,14 @@ class ApriltagTrackPid(Node):
         self.upper_color = np.array([self.get_parameter("upper_l").value, 
                                      self.get_parameter("upper_a").value, 
                                      self.get_parameter("upper_b").value])
+
+        self.declare_parameter('cam_frame', 'camera_link')
+        self.declare_parameter('tag_frame', 'object_1')
+        self.cam_frame = self.get_parameter('cam_frame').value
+        self.tag_frame = self.get_parameter('tag_frame').value
+
         self.tag_size_w = 0.026
         self.tag_size_h = 0.071
-        # self.tag_size_h = 0.026
-        # self.tag_size_h = 0.02
-        # self.tag_size_w = 0.02
 
         self.obj_pts = np.array([
             [-self.tag_size_w/2, -self.tag_size_h/2, 0],
@@ -139,6 +141,32 @@ class ApriltagTrackPid(Node):
 
         self.tf_broadcaster = TransformBroadcaster(self)
 
+        self.add_on_set_parameters_callback(self.on_param_change)
+
+    def on_param_change(self, params):
+        for param in params:
+            if param.name in (
+                "lower_l", "lower_a", "lower_b",
+                "upper_l", "upper_a", "upper_b"
+            ):
+                self.lower_color = np.array([
+                    self.get_parameter("lower_l").value,
+                    self.get_parameter("lower_a").value,
+                    self.get_parameter("lower_b").value
+                ], dtype=np.uint8)
+    
+                self.upper_color = np.array([
+                    self.get_parameter("upper_l").value,
+                    self.get_parameter("upper_a").value,
+                    self.get_parameter("upper_b").value
+                ], dtype=np.uint8)
+    
+                self.get_logger().info(
+                    f"Updated LAB range: lower={self.lower_color}, upper={self.upper_color}"
+                )
+    
+        return SetParametersResult(successful=True)
+        
     def image_callback(self, msg):
 
         # Convert the ROS Image message to an OpenCV image
@@ -152,29 +180,6 @@ class ApriltagTrackPid(Node):
         img_h, img_w = frame.shape[:2]
         lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # Initialize the lower and upper color arrays with the parameter values
-        self.lower_color = np.array([self.get_parameter("lower_l").value, 
-                                     self.get_parameter("lower_a").value, 
-                                     self.get_parameter("lower_b").value])
-        self.upper_color = np.array([self.get_parameter("upper_l").value, 
-                                     self.get_parameter("upper_a").value, 
-                                     self.get_parameter("upper_b").value])
-        # red
-        # self.lower_color = np.array([0, 170, 170])  
-        # self.upper_color = np.array([255, 255, 255])
-        # green
-        # self.lower_color = np.array([160, 0, 0])  
-        # self.upper_color = np.array([255, 80, 255])  
-        self.lower_color = np.array([0, 0, 0])  
-        self.upper_color = np.array([255, 100, 255])      
-        # self.lower_color = np.array([170, 0, 0])  
-        # self.upper_color = np.array([255, 100, 255])       
-        # # green
-        # self.lower_color = np.array([110, 0, 0])  
-        # self.upper_color = np.array([255, 110, 255])  
-        # blue
-        # self.lower_color = np.array([80, 0, 0])  
-        # self.upper_color = np.array([160, 255, 110])  
 
         mask = cv2.inRange(lab, self.lower_color, self.upper_color)
 
@@ -198,6 +203,15 @@ class ApriltagTrackPid(Node):
                     corners = order_points(corners).astype(np.float32)                        
                     corners = corners.astype(np.float32)
                     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.01)
+                    print(f"Corners before cornerSubPix: {corners}")
+
+                    # Check if corners are within image bounds
+                    if np.any(corners < 0) or np.any(corners >= frame.shape[:2]):
+                        print("Error: Corner points are out of bounds!")
+                        return
+                    
+                    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.01)
+
                     cv2.cornerSubPix(gray, corners, (5,5), (-1,-1), criteria)
 
                     # --- Improved PnP with RANSAC + refine ---
@@ -207,11 +221,11 @@ class ApriltagTrackPid(Node):
                     dist = np.array([-0.208848, 0.028006, -0.000705, -0.000820, 0.0], dtype=np.float64)
                     cam = K
 
-                    # 1. 先用 RANSAC 求稳健解
+                    # 1. First, use RANSAC to find a robust solution.
                     success, rvec, tvec, inliers = cv2.solvePnPRansac(
                         object_pts, image_pts, cam, dist,
                         flags=cv2.SOLVEPNP_IPPE_SQUARE,
-                        reprojectionError=3.0,     # 可微调
+                        reprojectionError=3.0,     # Adjustable
                         confidence=0.99,
                         iterationsCount=200,
                     )
@@ -220,12 +234,12 @@ class ApriltagTrackPid(Node):
                         self.get_logger().warn("solvePnPRansac failed.")
                         return
                     else:
-                        # 输出内点数量
+                        # Output the number of interior points
 
                         n_inliers = 0 if inliers is None else len(inliers)
                         # self.get_logger().info(f"PnPRansac success with {n_inliers} inliers")
 
-                        # 2. （可选）使用 LM 优化内点集进一步 refine
+                        # 2. (Optional) Further refine the interior point set using LM optimization.
                         try:
                             rvec, tvec = cv2.solvePnPRefineLM(
                                 object_pts[inliers[:, 0]], image_pts[inliers[:, 0]],
@@ -234,24 +248,24 @@ class ApriltagTrackPid(Node):
                         except Exception:
                             pass
                         
-                        # 3. 强制旋转矩阵正交化（避免数值漂移）
+                        # 3. Force rotation matrix orthogonalization (to avoid numerical drift)
                         R, _ = cv2.Rodrigues(rvec)
                         U, _, Vt = np.linalg.svd(R)
                         R_ortho = U @ Vt
                         rvec, _ = cv2.Rodrigues(R_ortho)
 
-                        # 4. 计算重投影误差
+                        # 4. Calculate reprojection error
                         proj, _ = cv2.projectPoints(object_pts, rvec, tvec, cam, dist)
                         err = np.linalg.norm(proj.reshape(-1, 2) - image_pts, axis=1)
                         # self.get_logger().info(f"mean reproj err = {err.mean():.2f}px")
 
-                        # 5. 提取平移结果
+                        # 5. Extract translation result
                         x_m, y_m, z_m = tvec.flatten()
                         # self.get_logger().info(f"tvec = ({x_m:.3f}, {y_m:.3f}, {z_m:.3f})")
 
-                        # 后续继续使用 R_ortho / tvec 发布 TF 或姿态即可
+                        # Continue using R_ortho / tvec to publish TF or poses.
                             
-                        # 调整姿态方向
+                        # Adjust attitude and direction
                         R_flip = np.array([
                             [1,  0,  0],
                             [0, -1,  0],
@@ -275,10 +289,10 @@ class ApriltagTrackPid(Node):
                         pitch = 0.0
                         # yaw = 0.0
 
-                        # 用修正后的欧拉角重新生成旋转矩阵
+                        # Regenerate the rotation matrix using the corrected Euler angles.
                         R_fixed = Rscipy.from_euler('xyz', [roll, pitch, yaw]).as_matrix()
                         R = R_fixed
-                        # 转换为四元数
+                        # Convert to quaternion
                         rot = Rscipy.from_matrix(R)
                         qx, qy, qz, qw = rot.as_quat()
 
@@ -295,9 +309,9 @@ class ApriltagTrackPid(Node):
 
                         transform = TransformStamped()
                         transform.header.stamp = self.get_clock().now().to_msg()
-                        transform.header.frame_id = "camera_link"     # 父坐标系
-                        # transform.child_frame_id = f"object_{r['id']}"  # 子坐标系（每个 tag 一个）
-                        transform.child_frame_id = "object_1"  # 子坐标系（每个 tag 一个）
+                        transform.header.frame_id = self.cam_frame     
+                        # transform.child_frame_id = f"object_{r['id']}"  
+                        transform.child_frame_id = self.tag_frame
 
                         # if x_m<0:
                         #     delta_X = delta_X-0.01
@@ -315,20 +329,20 @@ class ApriltagTrackPid(Node):
 
                         self.tf_broadcaster.sendTransform(transform)
 
-        # gst_process.stdin.write(frame.tobytes())
+        gst_process.stdin.write(frame.tobytes())
         # Convert the OpenCV image back to a ROS Image message
         result_img_msg = self.bridge.cv2_to_imgmsg(frame, encoding="bgr8")                                                                                      
         # Publish the result image message
-        self.apriltag_track_pid_publisher.publish(result_img_msg)
+        self.colorblock_detect_publisher.publish(result_img_msg)
 
 def main(args=None):
     # Initialize the ROS client library
     rclpy.init(args=args)
-    apriltag_track_pid = ApriltagTrackPid()
+    colorblock_detect = ColorBlockDetect()
     # Spin the node
-    rclpy.spin(apriltag_track_pid)
+    rclpy.spin(colorblock_detect)
     # Destroy the node
-    apriltag_track_pid.destroy_node()
+    colorblock_detect.destroy_node()
     # Shutdown the ROS client library
     rclpy.shutdown()
 
