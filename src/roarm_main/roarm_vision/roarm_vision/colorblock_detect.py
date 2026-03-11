@@ -110,7 +110,7 @@ class ColorBlockDetect(Node):
         # Declare parameters for lower and upper hue, saturation, and value
         self.declare_parameter("lower_l", 110, ParameterDescriptor(description="Lower L"))
         self.declare_parameter("lower_a", 0, ParameterDescriptor(description="Lower A"))
-        self.declare_parameter("lower_b", 0, ParameterDescriptor(description="Lower B"))
+        self.declare_parameter("lower_b", 160, ParameterDescriptor(description="Lower B"))
         
         self.declare_parameter("upper_l", 255, ParameterDescriptor(description="Upper L"))
         self.declare_parameter("upper_a", 110, ParameterDescriptor(description="Upper A"))

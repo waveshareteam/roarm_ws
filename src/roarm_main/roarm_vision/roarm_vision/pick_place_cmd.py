@@ -508,7 +508,7 @@ class PickPlaceCmdNode(Node):
 
         self.hand_node.add_point(home)
         self.hand_node.publish_trajectory()
-        time.sleep(2)
+        time.sleep(1.5)
 
         self.get_logger().info("Pick finished")
 
@@ -519,16 +519,27 @@ class PickPlaceCmdNode(Node):
         self.get_logger().info("Start Place")
 
         if model=='roarm_m2':
-            home=[0.0, 0.0, 2.618]
+            home=[1.5708, 0.0, 2.618]
         elif model=='roarm_m3':
-            home=[0.0, 0.0, 1.5708, 1.5708, 0.0]
+            home=[1.5708, 0.0, 2.618, 0.0, 0.0]
 
         self.hand_node.add_point(home)
         self.hand_node.publish_trajectory()
-        time.sleep(2)
+        time.sleep(5)
 
         self.gripper_node.publish_gripper_cmd(1.5)
         time.sleep(3)
+
+        self.gripper_node.publish_gripper_cmd(0.0)
+
+        if model=='roarm_m2':
+            back=[0.0, 0.0, 2.618]
+        elif model=='roarm_m3':
+            back=[0.0, 0.0, 2.618, 0.0, 0.0]
+
+        self.hand_node.add_point(back)
+        self.hand_node.publish_trajectory()
+        time.sleep(5)
 
         self.get_logger().info("Place finished")
 
