@@ -379,10 +379,10 @@ class PickPlaceCmdNode(Node):
 
         self.hand_node.add_point(home)
         self.hand_node.publish_trajectory()
-        time.sleep(2)
+        time.sleep(1.5)
 
         self.gripper_node.publish_gripper_cmd(1.5)
-        time.sleep(3)
+        # time.sleep(3)
             
         pose = self.targetPose_node.update_target_pose(
                 target_frame,
@@ -402,7 +402,7 @@ class PickPlaceCmdNode(Node):
         z = pose.position.z * 1000
 
         if model=='roarm_m2':
-            angles = roarm.compute_joint_rad_by_pos(x, y, z, 0.0)
+            angles_first = roarm.compute_joint_rad_by_pos(x, y, z, 0.0)
         elif model=='roarm_m3':
             rot = R.from_quat([
                 pose.orientation.x,
@@ -417,18 +417,18 @@ class PickPlaceCmdNode(Node):
             self.get_logger().info(f"yaw: {yaw}")
             pitch_fixed = limit_yaw(pitch)
             roll_fixed = 1.571
-            angles = roarm.compute_joint_rad_by_pos(
+            angles_first = roarm.compute_joint_rad_by_pos(
                 x, y, z,
                 pitch_fixed,
                 roll_fixed,
                 0.0
             )
 
-        if any(math.isnan(a) for a in angles):
+        if any(math.isnan(a) for a in angles_first):
             self.get_logger().warn("IK failed")
             return False
 
-        self.hand_node.add_point(angles, 3.0)
+        self.hand_node.add_point(angles_first, 3.0)
         self.hand_node.publish_trajectory()
         time.sleep(3)
 
@@ -442,7 +442,7 @@ class PickPlaceCmdNode(Node):
         z = pose.position.z * 1000 - 87.459 + 30
 
         if model=='roarm_m2':
-            angles = roarm.compute_joint_rad_by_pos(x, y, z, 0.0)
+            angles_second = roarm.compute_joint_rad_by_pos(x, y, z, 0.0)
         elif model=='roarm_m3':
             rot = R.from_quat([
                 pose.orientation.x,
@@ -457,20 +457,20 @@ class PickPlaceCmdNode(Node):
             self.get_logger().info(f"yaw: {yaw}")
             pitch_fixed = limit_yaw(pitch)
             roll_fixed = 1.571
-            angles = roarm.compute_joint_rad_by_pos(
+            angles_second = roarm.compute_joint_rad_by_pos(
                 x, y, z,
                 pitch_fixed,
                 roll_fixed,
                 0.0
             )
 
-        if any(math.isnan(a) for a in angles):
+        if any(math.isnan(a) for a in angles_second):
             self.get_logger().warn("IK failed")
             return False
 
-        self.hand_node.add_point(angles, 3.0)
+        self.hand_node.add_point(angles_second,1.0)
         self.hand_node.publish_trajectory()
-        time.sleep(3)
+        time.sleep(1.0)
 
         if model=='roarm_m2':
             angles = roarm.compute_joint_rad_by_pos(x, y, z-60, 0.0)
@@ -499,12 +499,16 @@ class PickPlaceCmdNode(Node):
             self.get_logger().warn("IK failed")
             return False
 
-        self.hand_node.add_point(angles, 3.0)
+        self.hand_node.add_point(angles,1.0)
         self.hand_node.publish_trajectory()
-        time.sleep(3)
+        time.sleep(1.0)
 
         self.gripper_node.publish_gripper_cmd(gripper)
-        time.sleep(3)
+        time.sleep(1.5)
+
+        self.hand_node.add_point(angles_second,1.0)
+        self.hand_node.publish_trajectory()
+        time.sleep(1.0)
 
         self.hand_node.add_point(home)
         self.hand_node.publish_trajectory()
@@ -525,10 +529,10 @@ class PickPlaceCmdNode(Node):
 
         self.hand_node.add_point(home)
         self.hand_node.publish_trajectory()
-        time.sleep(5)
+        time.sleep(3)
 
         self.gripper_node.publish_gripper_cmd(1.5)
-        time.sleep(3)
+        time.sleep(1.5)
 
         self.gripper_node.publish_gripper_cmd(0.0)
 
@@ -539,7 +543,7 @@ class PickPlaceCmdNode(Node):
 
         self.hand_node.add_point(back)
         self.hand_node.publish_trajectory()
-        time.sleep(5)
+        time.sleep(3)
 
         self.get_logger().info("Place finished")
 
