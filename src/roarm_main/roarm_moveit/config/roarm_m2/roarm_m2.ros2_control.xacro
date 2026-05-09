@@ -1,17 +1,22 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:macro name="roarm_m2_ros2_control" params="name initial_positions_file">
+    <xacro:macro name="roarm_m2_ros2_control" params="use_gazebo GZ_VERSION initial_positions_file">
         <xacro:property name="initial_positions" value="${load_yaml(initial_positions_file)['initial_positions']}"/>
 
-        <ros2_control name="${name}" type="system">
+        <ros2_control name="RoarmHardware" type="system">
         
             <hardware>
-                <xacro:if value="${name== 'FakeSystem'}">
-                <plugin>mock_components/GenericSystem</plugin>
-                </xacro:if>
-                <xacro:if value="${name== 'GazeboSystem'}">
-                <plugin>gazebo_ros2_control/GazeboSystem</plugin>
-                </xacro:if>
+              <xacro:unless value="${use_gazebo}">
+              <plugin>mock_components/GenericSystem</plugin>
+              </xacro:unless>
+              <xacro:if value="${use_gazebo}">
+                <xacro:if value="${GZ_VERSION == 'classic'}">
+                  <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+                </xacro:if>    
+                <xacro:if value="${GZ_VERSION == 'harmonic'}">
+                  <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+                </xacro:if>         
+              </xacro:if>    
             </hardware>
             
             <joint name="base_link_to_link1">

@@ -59,6 +59,8 @@ install(TARGETS
 
 
 install(DIRECTORY
+  config
+  models
   worlds
   launch
   DESTINATION share/${PROJECT_NAME}/

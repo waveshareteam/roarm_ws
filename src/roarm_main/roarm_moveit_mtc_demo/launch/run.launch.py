@@ -1,13 +1,13 @@
-from moveit_configs_utils import MoveItConfigsBuilder
 import os
 import yaml
+import xacro
+
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
-import xacro
-import sys
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument,OpaqueFunction
 from launch.substitutions import LaunchConfiguration
+from moveit_configs_utils import MoveItConfigsBuilder
 
 def load_file(package_name, file_path):
     package_path = get_package_share_directory(package_name)
@@ -53,14 +53,16 @@ def get_moveit_config(robot_name: str):
     moveit_config = RoarmMoveItConfig(moveit_config, ros2_controllers)
 
     return moveit_config
-    
-def generate_launch_description():
 
-    use_sim_time = LaunchConfiguration('use_sim_time')
-    ROARM_MODEL = os.environ['ROARM_MODEL'] 
-    moveit_config = get_moveit_config(ROARM_MODEL)
+def launch_setup(context, *args, **kwargs):
+    add_camera = context.launch_configurations['add_camera']
+    add_depth_camera = context.launch_configurations['add_depth_camera']
     
     share_dir = get_package_share_directory('roarm_moveit')
+    ROARM_MODEL = os.environ['ROARM_MODEL'] 
+
+    moveit_config = get_moveit_config(ROARM_MODEL)
+    
     xacro_file_name = ROARM_MODEL + '.urdf.xacro'
     xacro_file = os.path.join(
         share_dir,
@@ -68,26 +70,12 @@ def generate_launch_description():
         ROARM_MODEL,
         xacro_file_name)    
     
-    use_sim_time_str = "false"
-    add_depth_camera = "false"
-    for arg in sys.argv:
-        if 'use_sim_time' in arg:
-            use_sim_time_str = arg.split(':=')[1]
-        if 'add_depth_camera' in arg:
-            add_depth_camera = arg.split(':=')[1]
-    plugin= {
-        "true": "GazeboSystem",
-        "True": "GazeboSystem",
-        "false": "FakeSystem",
-        "False": "FakeSystem",
-    }
-    # Get the plugin name based on the use_sim_time argument
-    ros2_control_plugin = plugin[use_sim_time_str]
-
     mappings = {
-               "ros2_control_plugin": ros2_control_plugin,    
+               "use_gazebo": "false",
                "add_depth_camera": add_depth_camera,
+               "add_camera": add_camera,
                } 
+    
     robot_description_config = xacro.process_file(xacro_file, mappings=mappings)
     robot_description = robot_description_config.toxml()
     
@@ -109,4 +97,15 @@ def generate_launch_description():
     )
 
     arg = DeclareLaunchArgument(name="exe")
-    return LaunchDescription([arg, node])
+    return [arg, node]
+
+# Function to generate the launch description with configurable arguments
+def generate_launch_description():
+    return LaunchDescription([
+        # Argument to specify whether to use RViz
+        DeclareLaunchArgument('use_rviz', default_value='false', description='Whether to launch RViz2'),
+        DeclareLaunchArgument('add_camera', default_value='false', description='Choose whether to add camera'),      
+        DeclareLaunchArgument('add_depth_camera', default_value='false', description='Choose whether to add depth camera'),      
+        # Opaque function to execute the setup
+        OpaqueFunction(function=launch_setup)
+    ])

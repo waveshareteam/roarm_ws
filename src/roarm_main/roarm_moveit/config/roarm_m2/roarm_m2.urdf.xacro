@@ -1,14 +1,32 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="roarm_m2">
 
-<xacro:arg name="ros2_control_plugin" default="FakeSystem"/>
-<xacro:property name="ros2_control_plugin" value="$(arg ros2_control_plugin)"/>
+<xacro:macro name="use_gazebo" params="use_gazebo"></xacro:macro>
+<xacro:arg name="use_gazebo" default="false"/>
+<xacro:property name="use_gazebo" value="$(arg use_gazebo)"/>
+
+<xacro:macro name="GZ_VERSION" params="GZ_VERSION"></xacro:macro>
+<xacro:arg name="GZ_VERSION" default="classic"/>
+<xacro:property name="GZ_VERSION" value="$(arg GZ_VERSION)"/>
 
 <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
-<!-- Import roarm_m3 urdf file -->
+<!-- Import roarm urdf file -->
 <xacro:include filename="$(find roarm_description)/urdf/bases/roarm_m2.xacro" />
 <xacro:include filename="roarm_m2.ros2_control.xacro" />
 
-<xacro:roarm_m2_ros2_control name="$(arg ros2_control_plugin)" initial_positions_file="$(arg initial_positions_file)"/>
+<xacro:roarm_m2_ros2_control use_gazebo="$(arg use_gazebo)" GZ_VERSION="$(arg GZ_VERSION)" initial_positions_file="$(arg initial_positions_file)"/>
+
+<gazebo>
+    <xacro:if value="${GZ_VERSION == 'classic'}">
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+        <parameters>$(find roarm_moveit)/config/roarm_m2/ros2_controllers.yaml</parameters>
+    </plugin>
+    </xacro:if>    
+    <xacro:if value="${GZ_VERSION == 'harmonic'}">
+    <plugin name="gz_ros2_control::GazeboSimROS2ControlPlugin" filename="libgz_ros2_control-system.so">
+        <parameters>$(find roarm_moveit)/config/roarm_m2/ros2_controllers.yaml</parameters>
+    </plugin>
+    </xacro:if>  
+</gazebo>
 
 </robot>
