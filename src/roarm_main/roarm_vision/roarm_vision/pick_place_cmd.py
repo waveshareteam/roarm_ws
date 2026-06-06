@@ -279,7 +279,7 @@ class TargetPoseSubscription(Node):
 
         super().__init__("pick_place_cmd")
 
-        self.tf_buffer = Buffer()
+        self.tf_buffer = Buffer(cache_time=Duration(seconds=0.6))
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
         self.target_pose = Pose()
@@ -311,8 +311,28 @@ class TargetPoseSubscription(Node):
             self.get_logger().warn(
                 f"Could not transform {base_frame} to {target_frame}: {ex}"
             )
+            return None
 
         return self.target_pose
+
+class SimplePID:
+    def __init__(self, kp=0.5, ki=0.0, kd=0.1):
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
+        self.integral = 0.0
+        self.prev_err = 0.0
+
+    def update(self, error):
+        self.integral += error
+        self.integral = max(-100, min(100, self.integral))  # anti-windup
+        derivative = error - self.prev_err
+        self.prev_err = error
+        return self.kp * error + self.ki * self.integral + self.kd * derivative
+
+    def reset(self):
+        self.integral = 0.0
+        self.prev_err = 0.0
 
 def limit_yaw(yaw):
     v = yaw
@@ -330,7 +350,7 @@ def limit_yaw(yaw):
 
 class PickPlaceCmdNode(Node):
     def __init__(self, hand_node, gripper_node, targetPose_node):
-        super().__init__('colorblock_detect')
+        super().__init__('pick_place_cmd')
         self.hand_node = hand_node
         self.gripper_node = gripper_node
         self.targetPose_node = targetPose_node
@@ -348,7 +368,15 @@ class PickPlaceCmdNode(Node):
 
         self.get_logger().info("PickPlaceService started. Waiting for pick/place commands...")
 
+        self.current_xyz = [0.0, 0.0, 0.0]
+
     def handle_pick_place(self, request, response):
+
+        if request.cmd == 0:
+
+            success = self.move(request.target)
+
+            response.success = success
 
         if request.cmd == 1:
 
@@ -364,13 +392,87 @@ class PickPlaceCmdNode(Node):
 
         return response
 
-    def pick(self,target,gripper):
-        self.get_logger().info("Start Pick")
+    def get_current_position_mm(self):
+        return self.current_xyz
 
-        if target==1:
-            target_frame="object_1"
-        elif target==2:
-            target_frame="object_2"
+    def visual_servo_tf(self, target_frame, timeout=10.0, 
+                        tolerance_mm=5.0, dead_zone_mm=3.0, y_diff=20.0):
+        pid_x = SimplePID(kp=0.8, ki=0.0, kd=0.00)
+        pid_y = SimplePID(kp=0.7, ki=0.0, kd=0.05)
+
+        start = time.time()
+        ok_count = 0
+
+        while time.time() - start < timeout:
+            pose_obj = self.targetPose_node.update_target_pose(
+                target_frame, self.base_frame, self.cam_frame)
+            if pose_obj is None:
+                time.sleep(0.1)
+                continue
+
+            obj_x = pose_obj.position.x * 1000
+            obj_y = pose_obj.position.y * 1000 + y_diff
+
+            grip_x, grip_y, grip_z = self.get_current_position_mm()
+
+            err_x = obj_x - grip_x - y_diff
+            err_y = obj_y - grip_y
+            err_dist = math.sqrt(err_x**2 + err_y**2)
+
+            self.get_logger().info(f"servo err: x={err_x:.1f} y={err_y:.1f} mm")
+
+            if err_dist < tolerance_mm and abs(err_x) < tolerance_mm  and abs(err_y) < tolerance_mm:
+                ok_count += 1
+                if ok_count >= 3:
+                    self.get_logger().info("Aligned!")
+                    return True
+                time.sleep(0.1)
+                continue
+            else:
+                ok_count = 0
+
+            if abs(err_x) < dead_zone_mm:
+                err_x = 0.0
+            if abs(err_y) < dead_zone_mm:
+                err_y = 0.0
+
+            dx = pid_x.update(err_x)
+            dy = pid_y.update(err_y)
+
+            if abs(dx) < 0.5 and abs(dy) < 0.5:
+                time.sleep(0.1)
+                continue
+
+            angles = roarm.compute_joint_rad_by_pos(
+                grip_x + dx,
+                grip_y + dy,
+                grip_z,
+                0.0
+            )
+            if angles is None:
+                continue
+            self.current_xyz = [grip_x + dx, grip_y + dy, grip_z]
+            self.hand_node.add_point(angles, 1.0)
+            self.hand_node.publish_trajectory()
+            time.sleep(1.0)
+
+        self.get_logger().warn("Servo timeout")
+        return False
+
+    def standoff_xyz(self, x_mm, y_mm, z_mm, d_mm=100.0):
+        r = math.hypot(x_mm, y_mm)
+        if r < 1e-3:
+            return x_mm - d_mm, y_mm, z_mm
+        return (
+            x_mm - d_mm * x_mm / r,
+            y_mm - d_mm * y_mm / r,
+            z_mm,
+        )
+
+    def move(self,target):
+        self.get_logger().info("Start Move")
+
+        target_frame=f"object_{target}"
 
         if model=='roarm_m2':
             home=[0.0, 0.0, 2.618]
@@ -398,8 +500,10 @@ class PickPlaceCmdNode(Node):
             return False
 
         x = pose.position.x * 1000
-        y = pose.position.y * 1000 + 30
+        y = pose.position.y * 1000 + 40
         z = pose.position.z * 1000
+
+        x, y, z = self.standoff_xyz(x, y, z, d_mm=100.0)
 
         if model=='roarm_m2':
             angles_first = roarm.compute_joint_rad_by_pos(x, y, z, 0.0)
@@ -436,10 +540,17 @@ class PickPlaceCmdNode(Node):
                 target_frame,
                 self.base_frame,
                 self.cam_frame)
-
+                
+        if pose is None:
+            self.get_logger().warn("Pose is None")
+            self.hand_node.add_point(home)
+            self.hand_node.publish_trajectory()
+            time.sleep(1.5)
+            return False
+            
         x = pose.position.x * 1000
         y = pose.position.y * 1000 + 30
-        z = pose.position.z * 1000 - 87.459 + 30
+        z = pose.position.z * 1000 - 87.459 + 50
 
         if model=='roarm_m2':
             angles_second = roarm.compute_joint_rad_by_pos(x, y, z, 0.0)
@@ -472,8 +583,95 @@ class PickPlaceCmdNode(Node):
         self.hand_node.publish_trajectory()
         time.sleep(1.0)
 
+        self.current_xyz = [x, y, z]
+
+        aligned = self.visual_servo_tf(target_frame, timeout=10.0, tolerance_mm=4.0,y_diff=30.0)
+        if not aligned:
+            self.hand_node.add_point(home)
+            self.hand_node.publish_trajectory()
+            return False
+
+        ax, ay, az = self.get_current_position_mm()
         if model=='roarm_m2':
-            angles = roarm.compute_joint_rad_by_pos(x, y, z-60, 0.0)
+            angles = roarm.compute_joint_rad_by_pos(ax, ay, az, 0.0)
+        elif model=='roarm_m3':
+            rot = R.from_quat([
+                pose.orientation.x,
+                pose.orientation.y,
+                pose.orientation.z,
+                pose.orientation.w
+            ])
+            roll, pitch, yaw = rot.as_euler('xyz')
+            self.get_logger().info(f"roll: {roll}")
+            self.get_logger().info(f"pitch: {pitch}")
+            self.get_logger().info(f"yaw: {yaw}")
+            pitch_fixed = limit_yaw(pitch)
+            roll_fixed = 1.571
+            angles = roarm.compute_joint_rad_by_pos(
+                ax, ay, az-40,
+                pitch_fixed,
+                roll_fixed,
+                0.0
+            )
+            
+        if any(math.isnan(a) for a in angles):
+            self.get_logger().warn("IK failed")
+            return False
+
+        self.hand_node.add_point(angles,1.0)
+        self.hand_node.publish_trajectory()
+        time.sleep(1.0)
+
+        self.hand_node.add_point(angles_second,1.0)
+        self.hand_node.publish_trajectory()
+        time.sleep(1.0)
+
+        self.hand_node.add_point(home)
+        self.hand_node.publish_trajectory()
+        time.sleep(1.5)
+
+        self.get_logger().info("Pick finished")
+
+        return True
+
+    def pick(self,target,gripper):
+        self.get_logger().info("Start Pick")
+
+        target_frame=f"object_{target}"
+
+        if model=='roarm_m2':
+            home=[0.0, 0.0, 2.618]
+        elif model=='roarm_m3':
+            home=[0.0, 0.0, 1.5708, 1.5708, 0.0]
+
+        self.hand_node.add_point(home)
+        self.hand_node.publish_trajectory()
+        time.sleep(1.5)
+
+        self.gripper_node.publish_gripper_cmd(1.5)
+        # time.sleep(3)
+            
+        pose = self.targetPose_node.update_target_pose(
+                target_frame,
+                self.base_frame,
+                self.cam_frame)
+
+        if pose is None:
+            self.get_logger().warn("Pose is None")
+            return False
+
+        if pose.position.x == 0.0 and pose.position.y == 0.0 and pose.position.z == 0.0:
+            self.get_logger().warn("Pose is zero, skip")
+            return False
+
+        x = pose.position.x * 1000
+        y = pose.position.y * 1000 + 30
+        z = pose.position.z * 1000
+
+        x, y, z = self.standoff_xyz(x, y, z, d_mm=100.0)
+
+        if model=='roarm_m2':
+            angles_first = roarm.compute_joint_rad_by_pos(x, y, z, 0.0)
         elif model=='roarm_m3':
             rot = R.from_quat([
                 pose.orientation.x,
@@ -488,8 +686,94 @@ class PickPlaceCmdNode(Node):
             self.get_logger().info(f"yaw: {yaw}")
             pitch_fixed = limit_yaw(pitch)
             roll_fixed = 1.571
-            angles = roarm.compute_joint_rad_by_pos(
+            angles_first = roarm.compute_joint_rad_by_pos(
                 x, y, z,
+                pitch_fixed,
+                roll_fixed,
+                0.0
+            )
+
+        if any(math.isnan(a) for a in angles_first):
+            self.get_logger().warn("IK failed")
+            return False
+
+        self.hand_node.add_point(angles_first, 3.0)
+        self.hand_node.publish_trajectory()
+        time.sleep(3)
+
+        pose = self.targetPose_node.update_target_pose(
+                target_frame,
+                self.base_frame,
+                self.cam_frame)
+                
+        if pose is None:
+            self.get_logger().warn("Pose is None")
+            self.hand_node.add_point(home)
+            self.hand_node.publish_trajectory()
+            time.sleep(1.5)
+            return False
+            
+        x = pose.position.x * 1000
+        y = pose.position.y * 1000 + 20
+        z = pose.position.z * 1000 - 87.459 + 50
+
+        if model=='roarm_m2':
+            angles_second = roarm.compute_joint_rad_by_pos(x, y, z, 0.0)
+        elif model=='roarm_m3':
+            rot = R.from_quat([
+                pose.orientation.x,
+                pose.orientation.y,
+                pose.orientation.z,
+                pose.orientation.w
+            ])
+
+            roll, pitch, yaw = rot.as_euler('xyz')
+            self.get_logger().info(f"roll: {roll}")
+            self.get_logger().info(f"pitch: {pitch}")
+            self.get_logger().info(f"yaw: {yaw}")
+            pitch_fixed = limit_yaw(pitch)
+            roll_fixed = 1.571
+            angles_second = roarm.compute_joint_rad_by_pos(
+                x, y, z,
+                pitch_fixed,
+                roll_fixed,
+                0.0
+            )
+
+        if any(math.isnan(a) for a in angles_second):
+            self.get_logger().warn("IK failed")
+            return False
+
+        self.hand_node.add_point(angles_second,1.0)
+        self.hand_node.publish_trajectory()
+        time.sleep(1.0)
+
+        self.current_xyz = [x, y, z]
+
+        aligned = self.visual_servo_tf(target_frame, timeout=10.0, tolerance_mm=4.0,y_diff=20.0)
+        if not aligned:
+            self.hand_node.add_point(home)
+            self.hand_node.publish_trajectory()
+            return False
+
+        ax, ay, az = self.get_current_position_mm()
+        if model=='roarm_m2':
+            angles = roarm.compute_joint_rad_by_pos(ax, ay, az-60, 0.0)
+        elif model=='roarm_m3':
+            rot = R.from_quat([
+                pose.orientation.x,
+                pose.orientation.y,
+                pose.orientation.z,
+                pose.orientation.w
+            ])
+            roll, pitch, yaw = rot.as_euler('xyz')
+            self.get_logger().info(f"roll: {roll}")
+            self.get_logger().info(f"pitch: {pitch}")
+            self.get_logger().info(f"yaw: {yaw}")
+            pitch_fixed = limit_yaw(pitch)
+            roll_fixed = 1.571
+            angles = roarm.compute_joint_rad_by_pos(
+                ax, ay, az-40,
                 pitch_fixed,
                 roll_fixed,
                 0.0

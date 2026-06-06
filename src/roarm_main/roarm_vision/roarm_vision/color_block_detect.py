@@ -7,7 +7,7 @@ from geometry_msgs.msg import Point,TransformStamped
 from builtin_interfaces.msg import Time
 from tf2_ros import Buffer, TransformListener, TransformBroadcaster
 from scipy.spatial.transform import Rotation as Rscipy
-from rcl_interfaces.msg import ParameterDescriptor
+from rcl_interfaces.msg import ParameterDescriptor, SetParametersResult
 
 import cv2
 import numpy as np
@@ -20,6 +20,10 @@ import time
 import math
 from math import isnan
 from collections import deque
+from pathlib import Path
+_MODULE_DIR = Path(__file__).resolve().parent
+CONFIG_DIR = _MODULE_DIR.parent / "config"
+CONFIG_PATH = CONFIG_DIR / "lab_tool_colors.json"
 
 curpath = os.path.realpath(__file__)
 thisPath = os.path.dirname(curpath)
@@ -97,40 +101,28 @@ def order_points(pts):
 
 class ColorBlockDetect(Node):
     def __init__(self):
-        super().__init__('colorblock_detect')
+        super().__init__('color_block_detect')
         # Create a subscription to the image_raw topic
-        # self.image_rect_subscription = self.create_subscription(Image,'/image_rect', self.image_callback,10)
-        self.image_raw_subscription = self.create_subscription(Image,'/image_raw', self.image_callback,10)
-        # Create a publisher to the colorblock_detect/result topic
-        self.colorblock_detect_publisher = self.create_publisher(Image, '/colorblock_detect/result', 10)
+        self.image_rect_subscription = self.create_subscription(Image,'/image_rect', self.image_callback,10)
+        # self.image_raw_subscription = self.create_subscription(Image,'/image_raw', self.image_callback,10)
+        # Create a publisher to the color_block_detect/result topic
+        self.color_block_detect_publisher = self.create_publisher(Image, '/color_block_detect/result', 10)
         # Create a CvBridge object to convert between ROS Image messages and OpenCV images
         self.bridge = CvBridge()
 
-
-        # Declare parameters for lower and upper hue, saturation, and value
-        self.declare_parameter("lower_l", 110, ParameterDescriptor(description="Lower L"))
-        self.declare_parameter("lower_a", 0, ParameterDescriptor(description="Lower A"))
-        self.declare_parameter("lower_b", 160, ParameterDescriptor(description="Lower B"))
-        
-        self.declare_parameter("upper_l", 255, ParameterDescriptor(description="Upper L"))
-        self.declare_parameter("upper_a", 110, ParameterDescriptor(description="Upper A"))
-        self.declare_parameter("upper_b", 255, ParameterDescriptor(description="Upper B"))
-            
-        # Initialize the lower and upper color arrays with the parameter values
-        self.lower_color = np.array([self.get_parameter("lower_l").value, 
-                                     self.get_parameter("lower_a").value, 
-                                     self.get_parameter("lower_b").value])
-        self.upper_color = np.array([self.get_parameter("upper_l").value, 
-                                     self.get_parameter("upper_a").value, 
-                                     self.get_parameter("upper_b").value])
+        self.declare_parameter(
+            "color", "green",
+            ParameterDescriptor(description="Key in config/lab_tool_colors.json")
+        )
+        self._load_colors_from_json()
 
         self.declare_parameter('cam_frame', 'camera_link')
         self.declare_parameter('tag_frame', 'object_1')
         self.cam_frame = self.get_parameter('cam_frame').value
         self.tag_frame = self.get_parameter('tag_frame').value
 
-        self.tag_size_w = 0.026
-        self.tag_size_h = 0.071
+        self.tag_size_w = 0.02
+        self.tag_size_h = 0.02
 
         self.obj_pts = np.array([
             [-self.tag_size_w/2, -self.tag_size_h/2, 0],
@@ -143,30 +135,46 @@ class ColorBlockDetect(Node):
 
         self.add_on_set_parameters_callback(self.on_param_change)
 
+    def _load_colors_from_json(self):
+        profile = self.get_parameter("color").get_parameter_value().string_value
+
+        if not CONFIG_PATH.is_file():
+            self.get_logger().warn(
+                f"Config not found: {CONFIG_PATH}, use default LAB"
+            )
+            self.lower_color = np.array(_DEFAULT_LOWER, dtype=np.uint8)
+            self.upper_color = np.array(_DEFAULT_UPPER, dtype=np.uint8)
+            return
+
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            profiles = json.load(f)
+
+        if profile not in profiles:
+            self.get_logger().warn(
+                f"Profile '{profile}' not in {CONFIG_PATH}, "
+                f"available: {list(profiles.keys())}, use default"
+            )
+            self.lower_color = np.array(_DEFAULT_LOWER, dtype=np.uint8)
+            self.upper_color = np.array(_DEFAULT_UPPER, dtype=np.uint8)
+            return
+
+        p = profiles[profile]
+        self.lower_color = np.array(p["lower"], dtype=np.uint8)
+        self.upper_color = np.array(p["upper"], dtype=np.uint8)
+        self.get_logger().info(
+            f"LAB from json [{profile}]: lower={self.lower_color.tolist()} "
+            f"upper={self.upper_color.tolist()}"
+        )
+
     def on_param_change(self, params):
+        reload_needed = False
         for param in params:
-            if param.name in (
-                "lower_l", "lower_a", "lower_b",
-                "upper_l", "upper_a", "upper_b"
-            ):
-                self.lower_color = np.array([
-                    self.get_parameter("lower_l").value,
-                    self.get_parameter("lower_a").value,
-                    self.get_parameter("lower_b").value
-                ], dtype=np.uint8)
-    
-                self.upper_color = np.array([
-                    self.get_parameter("upper_l").value,
-                    self.get_parameter("upper_a").value,
-                    self.get_parameter("upper_b").value
-                ], dtype=np.uint8)
-    
-                self.get_logger().info(
-                    f"Updated LAB range: lower={self.lower_color}, upper={self.upper_color}"
-                )
-    
+            if param.name == "color":
+                reload_needed = True
+        if reload_needed:
+            self._load_colors_from_json()
         return SetParametersResult(successful=True)
-        
+
     def image_callback(self, msg):
 
         # Convert the ROS Image message to an OpenCV image
@@ -203,7 +211,7 @@ class ColorBlockDetect(Node):
                     corners = order_points(corners).astype(np.float32)                        
                     corners = corners.astype(np.float32)
                     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.01)
-                    print(f"Corners before cornerSubPix: {corners}")
+                    # print(f"Corners before cornerSubPix: {corners}")
 
                     # Check if corners are within image bounds
                     if np.any(corners < 0) or np.any(corners >= frame.shape[:2]):
@@ -299,7 +307,7 @@ class ColorBlockDetect(Node):
                     #     tag_info = (f"ID: {r['id']}, Pos: ({x_m:.3f}, {y_m:.3f}, {z_m:.3f}), "
                     # f"Ori: ({roll:.3f}, {pitch:.3f}, {yaw:.3f})")
                         tag_info = (f"Pos: ({x_m:.3f}, {y_m:.3f}, {z_m:.3f})")
-                        print(tag_info)
+                        # print(tag_info)
                         # Draw a polygon around the apriltag
                         cv2.polylines(frame, [corners.astype(np.int32)], isClosed=True, color=(0, 255, 0), thickness=2)
                         cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
@@ -313,10 +321,6 @@ class ColorBlockDetect(Node):
                         # transform.child_frame_id = f"object_{r['id']}"  
                         transform.child_frame_id = self.tag_frame
 
-                        # if x_m<0:
-                        #     delta_X = delta_X-0.01
-                        # if x_m>0:
-                        #     delta_X = delta_X+0.01
                         transform.transform.translation.x = float(x_m+delta_X)
                         transform.transform.translation.y = float(y_m+delta_Y) 
                         # cam in hand
@@ -333,16 +337,16 @@ class ColorBlockDetect(Node):
         # Convert the OpenCV image back to a ROS Image message
         result_img_msg = self.bridge.cv2_to_imgmsg(frame, encoding="bgr8")                                                                                      
         # Publish the result image message
-        self.colorblock_detect_publisher.publish(result_img_msg)
+        self.color_block_detect_publisher.publish(result_img_msg)
 
 def main(args=None):
     # Initialize the ROS client library
     rclpy.init(args=args)
-    colorblock_detect = ColorBlockDetect()
+    color_block_detect = ColorBlockDetect()
     # Spin the node
-    rclpy.spin(colorblock_detect)
+    rclpy.spin(color_block_detect)
     # Destroy the node
-    colorblock_detect.destroy_node()
+    color_block_detect.destroy_node()
     # Shutdown the ROS client library
     rclpy.shutdown()
 

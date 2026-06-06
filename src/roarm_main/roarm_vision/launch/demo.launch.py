@@ -22,6 +22,11 @@ def generate_launch_description():
         description='Choose which cam_frame'
     )
 
+    color_arg = DeclareLaunchArgument(
+        'color', default_value='green', 
+        description='Choose which color'
+    )
+
     cam_bringup_launch = IncludeLaunchDescription(
          PythonLaunchDescriptionSource(
              os.path.join(get_package_share_directory(package), 'launch', 'camera.launch.py')
@@ -41,15 +46,16 @@ def generate_launch_description():
         package=package,
         executable=LaunchConfiguration("exe"),
         output="screen",
-        parameters=[
-
-        ],
+        parameters=[{
+            'color': LaunchConfiguration('color'),
+        }]
     )
 
     arg = DeclareLaunchArgument(name="exe")
     return LaunchDescription([
         base_frame_arg,
         cam_frame_arg,
+        color_arg,
         cam_bringup_launch,
         pickplacecmd_node,
         arg, 

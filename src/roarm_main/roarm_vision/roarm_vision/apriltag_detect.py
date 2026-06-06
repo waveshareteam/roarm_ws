@@ -84,8 +84,8 @@ class ApriltagDetect(Node):
     def __init__(self):
         super().__init__('apriltag_detect')
         # Create a subscription to the image_raw topic
-        # self.image_rect_subscription = self.create_subscription(Image,'/image_rect', self.image_callback,10)
-        self.image_raw_subscription = self.create_subscription(Image,'/image_raw', self.image_callback,10)
+        self.image_rect_subscription = self.create_subscription(Image,'/image_rect', self.image_callback,10)
+        # self.image_raw_subscription = self.create_subscription(Image,'/image_raw', self.image_callback,10)
         # Create a publisher to the apriltag_detect/result topic
         self.apriltag_detect_publisher = self.create_publisher(Image, '/apriltag_detect/result', 10)
         # Create a CvBridge object to convert between ROS Image messages and OpenCV images
@@ -101,7 +101,7 @@ class ApriltagDetect(Node):
             # debug=0
         )
 
-        self.tag_size = 0.024
+        self.tag_size = 0.028
 
         self.obj_pts = np.array([
             [-self.tag_size/2, -self.tag_size/2, 0],
@@ -112,35 +112,18 @@ class ApriltagDetect(Node):
 
         self.tf_broadcaster = TransformBroadcaster(self)
 
-        self.cmd_pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.moving = False           
         self.move_end_time = None     
         self.current_twist = Twist()
-        self.create_timer(0.02, self.timer_callback)
 
         self.declare_parameter('cam_frame', 'camera_link')
-        self.declare_parameter('tag_frame', 'object_1')
         self.cam_frame = self.get_parameter('cam_frame').value
-        self.tag_frame = self.get_parameter('tag_frame').value
 
         fx = K[0, 0]
         fy = K[1, 1]
         cx = K[0, 2]
         cy = K[1, 2]
         self.camera_params = (fx, fy, cx, cy)
-
-    def timer_callback(self):
-        if self.moving and self.move_end_time is not None:
-            now = self.get_clock().now().nanoseconds
-            if now >= self.move_end_time:
-                self.cmd_pub.publish(Twist())  
-                self.moving = False
-                self.move_end_time = None
-
-    def compute_move_duration(self, y_m, min_duration=0.05, max_duration=0.3, distance_threshold=0.3):
-        distance = abs(y_m)
-        duration = min_duration + (max_duration - min_duration) * min(distance / distance_threshold, 1.0)
-        return duration
 
     def image_callback(self, msg):
 
@@ -159,22 +142,20 @@ class ApriltagDetect(Node):
         gray = clahe.apply(gray)
         gray = cv2.GaussianBlur(gray, (3, 3), 0)
 
-        roi = gray[140:340,120:520]
-
         # Detect apriltags in the image
-        results = self.detector.detect(roi, False, self.camera_params, self.tag_size)
+        results = self.detector.detect(gray, False, self.camera_params, self.tag_size)
 
         # Loop through the detected apriltags
         if results:
             for r in results:
                 # Get the corners of the apriltag
                 corners = r.corners.astype(int)
-                corners[:,0] += 120
-                corners[:,1] += 140
-                center_x, center_y = int(r.center[0]+120), int(r.center[1]+140)
+                image_pts = np.array(corners, dtype=np.float32).reshape(-1, 2)
+
+                center_x, center_y = int(r.center[0]), int(r.center[1])
 
                 # --- Improved PnP with RANSAC + refine ---
-                image_pts = np.array(corners, dtype=np.float32).reshape(-1, 2)
+                # image_pts = np.array(corners, dtype=np.float32).reshape(-1, 2)
                 object_pts = self.obj_pts.reshape(-1, 3).astype(np.float32)
                 # dist = np.zeros((5,), dtype=np.float32)
                 dist = np.array([-0.208848, 0.028006, -0.000705, -0.000820, 0.0], dtype=np.float64)
@@ -190,7 +171,7 @@ class ApriltagDetect(Node):
 
                 if not success:
                     self.get_logger().warn("solvePnPRansac failed.")
-                    return
+                    continue
                 else:
                     # Output the number of interior points
 
@@ -222,91 +203,57 @@ class ApriltagDetect(Node):
                     # self.get_logger().info(f"tvec = ({x_m:.3f}, {y_m:.3f}, {z_m:.3f})")
                     # Continue using R_ortho / tvec to publish TF or poses.
 
-                    twist = Twist()
-                    move_duration = 0.0
+                    # Adjust attitude and direction
+                    R_flip = np.array([
+                        [1,  0,  0],
+                        [0, -1,  0],
+                        [0,  0, -1]
+                    ])
+                    R = R_ortho @ R_flip
 
-                    if y_m < -0.05:  # The target is too far away
-                        self.get_logger().info("The target is too far, move forward a little")
-                        twist.linear.x = 0.1
-                        move_duration = self.compute_move_duration(y_m)
+                    sy = math.sqrt(R[0,0]**2 + R[1,0]**2)
+                    singular = sy < 1e-6
 
-                    elif y_m > 0.02:  # The target is too close
-                        self.get_logger().info("The target is too close, step back a little")
-                        twist.linear.x = -0.1
-                        move_duration = self.compute_move_duration(y_m)
-
+                    if not singular:
+                        roll  = math.atan2(R[2,1], R[2,2])
+                        pitch = math.atan2(-R[2,0], sy)
+                        yaw   = math.atan2(R[1,0], R[0,0])
                     else:
-                        twist.linear.x = 0.0
-                        move_duration = 0.0
+                        roll  = math.atan2(-R[1,2], R[1,1])
+                        pitch = math.atan2(-R[2,0], sy)
+                        yaw   = 0
 
-                    # If you need to move
-                    if move_duration > 0:
-                        self.moving = True
-                        self.move_end_time = self.get_clock().now().nanoseconds + int(move_duration * 1e9)
-                        self.current_twist = twist
-                    else:
-                        self.moving = False
-                    # self.cmd_pub.publish(twist)
-                        
-                # Adjust attitude and direction
-                R_flip = np.array([
-                    [1,  0,  0],
-                    [0, -1,  0],
-                    [0,  0, -1]
-                ])
-                R = R_ortho @ R_flip
+                    # Regenerate the rotation matrix using the corrected Euler angles.
+                    R_fixed = Rscipy.from_euler('xyz', [roll, pitch, yaw]).as_matrix()
+                    R = R_fixed
+                    # Convert to quaternion
+                    rot = Rscipy.from_matrix(R)
+                    qx, qy, qz, qw = rot.as_quat()
 
-                sy = math.sqrt(R[0,0]**2 + R[1,0]**2)
-                singular = sy < 1e-6
+                    tag_info = (f"ID: {r.tag_id}, Pos: ({x_m:.3f}, {y_m:.3f}, {z_m:.3f}), ")
+                    # print(tag_info)
 
-                if not singular:
-                    roll  = math.atan2(R[2,1], R[2,2])
-                    pitch = math.atan2(-R[2,0], sy)
-                    yaw   = math.atan2(R[1,0], R[0,0])
-                else:
-                    roll  = math.atan2(-R[1,2], R[1,1])
-                    pitch = math.atan2(-R[2,0], sy)
-                    yaw   = 0
-                    
-                roll = 0.0  
-                pitch = 0.0
-                # yaw = 0.0
+                    # Draw a polygon around the apriltag
+                    cv2.polylines(frame, [corners], isClosed=True, color=(0, 255, 0), thickness=2)
+                    cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
 
-                # Regenerate the rotation matrix using the corrected Euler angles.
-                R_fixed = Rscipy.from_euler('xyz', [roll, pitch, yaw]).as_matrix()
-                R = R_fixed
-                # Convert to quaternion
-                rot = Rscipy.from_matrix(R)
-                qx, qy, qz, qw = rot.as_quat()
+                    delta_X, delta_Y = compute_3d_translation(30, 4, z_m, K)
 
-                tag_info = (f"ID: {r.tag_id}, Pos: ({x_m:.3f}, {y_m:.3f}, {z_m:.3f}), ")
-                print(tag_info)
-                # Draw a polygon around the apriltag
-                cv2.polylines(frame, [corners], isClosed=True, color=(0, 255, 0), thickness=2)
-                cv2.circle(frame, (center_x, center_y), 5, (0, 0, 255), -1)
-                cv2.putText(frame, tag_info, (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    transform = TransformStamped()
+                    transform.header.stamp = self.get_clock().now().to_msg()
+                    transform.header.frame_id = self.cam_frame    
+                    transform.child_frame_id = f"object_{r.tag_id}"
 
-                delta_X, delta_Y = compute_3d_translation(30, 4, z_m, K)
+                    transform.transform.translation.x = float(x_m+delta_X)
+                    transform.transform.translation.y = float(y_m+delta_Y) 
+                    transform.transform.translation.z = float(z_m)                
 
-                transform = TransformStamped()
-                transform.header.stamp = self.get_clock().now().to_msg()
-                transform.header.frame_id = self.cam_frame    
-                transform.child_frame_id = self.tag_frame  
+                    transform.transform.rotation.x = float(qx)
+                    transform.transform.rotation.y = float(qy)
+                    transform.transform.rotation.z = float(qz)
+                    transform.transform.rotation.w = float(qw)
 
-                if x_m<0:
-                    delta_X = delta_X-0.01
-                if x_m>0:
-                    delta_X = delta_X+0.01
-                transform.transform.translation.x = float(x_m+delta_X)
-                transform.transform.translation.y = float(y_m+delta_Y) 
-                transform.transform.translation.z = float(z_m)                
-
-                transform.transform.rotation.x = float(qx)
-                transform.transform.rotation.y = float(qy)
-                transform.transform.rotation.z = float(qz)
-                transform.transform.rotation.w = float(qw)
-
-                self.tf_broadcaster.sendTransform(transform)
+                    self.tf_broadcaster.sendTransform(transform)
 
         gst_process.stdin.write(frame.tobytes())
         gst_process.stdin.flush()

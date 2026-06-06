@@ -17,8 +17,8 @@ from launch_ros.descriptions import ComposableNode
 # Define a function to generate the launch description
 def generate_launch_description():
 
-    # Get the package directory for the ugv_vision package
-    pkg_dir = get_package_share_directory('ugv_vision')
+    # Get the package directory for the roarm_vision package
+    pkg_dir = get_package_share_directory('roarm_vision')
     # Get the path to the params.yaml file
     param_file = os.path.join(pkg_dir, 'config', 'params.yaml') 
 
@@ -37,7 +37,7 @@ def generate_launch_description():
     )
 
     use_rect_arg = DeclareLaunchArgument(
-        'use_rect', default_value='false',
+        'use_rect', default_value='true',
         description='Whether to use image rect '
     )
 
