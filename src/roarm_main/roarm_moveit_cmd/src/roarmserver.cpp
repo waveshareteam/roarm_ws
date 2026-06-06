@@ -26,7 +26,7 @@ private:
               double base = positions.at(std::distance(names.begin(), std::find(names.begin(), names.end(), "base_link_to_link1")));
               double shoulder = positions.at(std::distance(names.begin(), std::find(names.begin(), names.end(), "link1_to_link2")));
               double elbow = positions.at(std::distance(names.begin(), std::find(names.begin(), names.end(), "link2_to_link3")));
-              double hand = positions.at(std::distance(names.begin(), std::find(names.begin(), names.end(), "link3_to_gripper_link")));
+              double hand = positions.at(std::distance(names.begin(), std::find(names.begin(), names.end(), "gripper_joint")));
               
               pose = roarm_m2::computePosbyJointRad(base, shoulder, elbow, hand);
               

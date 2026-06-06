@@ -40,14 +40,67 @@
                 </state_interface>
                 <state_interface name="velocity"/>
             </joint>
-            <joint name="link3_to_gripper_link">
+            <joint name="gripper_joint">
                 <command_interface name="position"/>
                 <state_interface name="position">
-                  <param name="initial_value">${initial_positions['link3_to_gripper_link']}</param>
+                  <param name="initial_value">${initial_positions['gripper_joint']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
             </joint>
-
+            <joint name="gripper_left_joint1">
+              <param name="mimic">gripper_joint</param>
+              <param name="multiplier">1</param>
+              <!-- <command_interface name="position"/> -->
+              <state_interface name="position">
+                <param name="initial_value">${initial_positions['gripper_joint']}</param>
+              </state_interface>
+              <state_interface name="velocity"/>
+            </joint>
+            <joint name="gripper_left_joint2">
+              <param name="mimic">gripper_joint</param>
+              <param name="multiplier">1</param>
+              <!-- <command_interface name="position"/> -->
+              <state_interface name="position">
+                <param name="initial_value">${initial_positions['gripper_joint']}</param>
+              </state_interface>
+              <state_interface name="velocity"/>
+            </joint>
+            <joint name="gripper_left_joint3">
+              <param name="mimic">gripper_joint</param>
+              <param name="multiplier">-1</param>
+              <!-- <command_interface name="position"/> -->
+              <state_interface name="position">
+                <param name="initial_value">${initial_positions['gripper_joint']}</param>
+              </state_interface>
+              <state_interface name="velocity"/>
+            </joint>
+            <joint name="gripper_right_joint1">
+              <param name="mimic">gripper_joint</param>
+              <param name="multiplier">1</param>
+              <!-- <command_interface name="position"/> -->
+              <state_interface name="position">
+                <param name="initial_value">${initial_positions['gripper_joint']}</param>
+              </state_interface>
+              <state_interface name="velocity"/>
+            </joint>
+            <joint name="gripper_right_joint2">
+              <param name="mimic">gripper_joint</param>
+              <param name="multiplier">-1</param>
+              <!-- <command_interface name="position"/> -->
+              <state_interface name="position">
+                <param name="initial_value">${initial_positions['gripper_joint']}</param>
+              </state_interface>
+              <state_interface name="velocity"/>
+            </joint>
+            <joint name="gripper_right_joint3">
+              <param name="mimic">gripper_joint</param>
+              <param name="multiplier">1</param>
+              <!-- <command_interface name="position"/> -->
+              <state_interface name="position">
+                <param name="initial_value">${initial_positions['gripper_joint']}</param>
+              </state_interface>
+              <state_interface name="velocity"/>
+            </joint>                                                            
         </ros2_control>
     </xacro:macro>
 </robot>

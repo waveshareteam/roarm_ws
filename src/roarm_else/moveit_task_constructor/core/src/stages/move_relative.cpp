@@ -335,7 +335,7 @@ bool MoveRelative::compute(const InterfaceState& state, planning_scene::Planning
 		// offset from link to ik_frame
 		const Eigen::Isometry3d& offset = scene->getCurrentState().getGlobalLinkTransform(link).inverse() * ik_pose_world;
 		std::cout << "offset" << offset.translation().transpose() << std::endl;
-		target_eigen = scene->getCurrentState().getFrameTransform("ugv_roarm_base_link").inverse() *target_eigen;
+		target_eigen = scene->getCurrentState().getFrameTransform("base_link").inverse() *target_eigen;
 		
 		auto result =
 		    planner_->plan(state.scene(), *link, offset, target_eigen, jmg, timeout, robot_trajectory, path_constraints);
@@ -350,7 +350,7 @@ bool MoveRelative::compute(const InterfaceState& state, planning_scene::Planning
 			reached_state->updateLinkTransforms();
 			// const Eigen::Isometry3d& reached_pose = reached_state->getGlobalLinkTransform(link) * offset;
 
-			const Eigen::Isometry3d& reached_pose = scene->getCurrentState().getFrameTransform("ugv_roarm_base_link").inverse() *(reached_state->getGlobalLinkTransform(link) * offset);
+			const Eigen::Isometry3d& reached_pose = scene->getCurrentState().getFrameTransform("base_link").inverse() *(reached_state->getGlobalLinkTransform(link) * offset);
 			std::cout << "reached_pose" << reached_pose.translation().transpose() << std::endl;
 			std::cout << "ik_pose_world" << ik_pose_world.translation().transpose() << std::endl;
 

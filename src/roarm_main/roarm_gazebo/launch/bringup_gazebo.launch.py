@@ -47,6 +47,7 @@ def launch_setup(context, *args, **kwargs):
     share_dir = get_package_share_directory('roarm_moveit')
     roarm_gazebo_dir = get_package_share_directory('roarm_gazebo')
     ROARM_MODEL = os.environ['ROARM_MODEL'] 
+    GRIPPER_TYPE = os.environ['GRIPPER_TYPE']
     GZ_VERSION = os.environ['GZ_VERSION'] 
 
     moveit_config = get_moveit_config(ROARM_MODEL)
@@ -63,6 +64,7 @@ def launch_setup(context, *args, **kwargs):
                 "GZ_VERSION": GZ_VERSION,
                 "add_camera": add_camera,
                 "add_depth_camera": add_depth_camera,
+                "gripper_type": GRIPPER_TYPE,
                } 
     robot_description_config = xacro.process_file(xacro_file, mappings=mappings)
     robot_description = robot_description_config.toxml()

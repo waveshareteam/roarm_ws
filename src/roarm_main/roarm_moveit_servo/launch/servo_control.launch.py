@@ -62,6 +62,7 @@ def launch_setup(context, *args, **kwargs):
     
     share_dir = get_package_share_directory('roarm_moveit')
     ROARM_MODEL = os.environ['ROARM_MODEL'] 
+    GRIPPER_TYPE = os.environ['GRIPPER_TYPE']
 
     moveit_config = get_moveit_config(ROARM_MODEL)
 
@@ -73,9 +74,10 @@ def launch_setup(context, *args, **kwargs):
         xacro_file_name)   
 
     mappings = {
-               "use_gazebo": "false",
-               "add_depth_camera": add_depth_camera,
-               "add_camera": add_camera,
+                "use_gazebo": "false",
+                "add_depth_camera": add_depth_camera,
+                "add_camera": add_camera,
+                "gripper_type": GRIPPER_TYPE,
                } 
     
     robot_description_config = xacro.process_file(xacro_file, mappings=mappings)

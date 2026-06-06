@@ -8,7 +8,7 @@ namespace roarm_m2 {
 #define ARM_L1_LENGTH_MM    126.06
 #define ARM_L2_LENGTH_MM_A  236.82
 #define ARM_L2_LENGTH_MM_B  30.00 
-#define ARM_L3_LENGTH_MM_A_0  280.15 //214 
+#define ARM_L3_LENGTH_MM_A_0  280.15
 #define ARM_L3_LENGTH_MM_B_0  1.73
 #define ARM_L4_LENGTH_MM_A  67.85
 #define ARM_L4_LENGTH_MM_B  5.98

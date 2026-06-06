@@ -363,7 +363,7 @@ void ComputeIK::compute() {
 	std::deque<visualization_msgs::msg::Marker> frame_markers;
 
 	geometry_msgs::msg::PoseStamped temp_pose_msg=ik_pose_msg;  
-	Eigen::Isometry3d tf_world_to_base = scene->getCurrentState().getFrameTransform("ugv_roarm_base_link").inverse();
+	Eigen::Isometry3d tf_world_to_base = scene->getCurrentState().getFrameTransform("base_link").inverse();
 	Eigen::Isometry3d tf_ik_pose;
 	tf2::fromMsg(temp_pose_msg.pose, tf_ik_pose);
 	Eigen::Isometry3d tf_in_base = tf_world_to_base * tf_ik_pose;

@@ -34,12 +34,12 @@
   </actuator>
 </transmission>
 
-<transmission name="link3_to_gripper_link_tran">
+<transmission name="gripper_joint_tran">
   <type>transmission_interface/SimpleTransmission</type>
-  <joint name="link3_to_gripper_link">
+  <joint name="gripper_joint">
     <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
   </joint>
-  <actuator name="link3_to_gripper_link_actr">
+  <actuator name="gripper_joint_actr">
     <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     <mechanicalReduction>1</mechanicalReduction>
   </actuator>

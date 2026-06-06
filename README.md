@@ -34,7 +34,7 @@ Install git:
 
 Then, clone the project from GitHub:
 
-    git clone https://github.com/DUDULRX/roarm_ws.git
+    git clone -b ros2-humble-develop-251125 https://github.com/DUDULRX/roarm_ws.git
 
 Install dependencies:
 
@@ -91,7 +91,7 @@ Contents of build_first.sh (automatically run by the script; no manual execution
     colcon build --packages-select roarm_moveit_ikfast_plugins 
     colcon build --packages-select roarm_moveit_mtc_demo 
     colcon build --packages-select roarm_moveit_servo 
-    colcon build --packages-select roarm_description roarm_driver roarm_moveit --symlink-install 
+    colcon build --packages-select roarm_description roarm_driver roarm_moveit roarm_vision --symlink-install 
     echo "source /home/ws/roarm_ws/install/setup.bash" >> ~/.bashrc
     source ~/.bashrc 
 
@@ -123,35 +123,45 @@ roarm_main:
 
     Responsible for interfacing with and controlling the physical robotic arm hardware.
 
-    3. roarm_moveit
+    3. roarm_gazebo
+    Simulation Environment for RoArm:
+
+    Provides the Gazebo simulation stack for the RoArm: world and scene models, robot spawn from roarm_description (with optional simulated cameras), gazebo_ros2_control / controller_manager integration, and launch files that wire Gazebo Classic or GZ Harmonic (GZ_VERSION) to MoveIt 2 and RViz so you can plan, visualize, and test arm behavior in simulation before using the real hardware.
+
+    4. roarm_moveit
     Kinematic Configuration:
 
     Provides configurations for MoveIt, a motion planning framework, including setup files and parameters required for the kinematic control of the robotic arm.
 
-    4. roarm_moveit_ikfast_plugins
+    5. roarm_moveit_ikfast_plugins
     IKFast Kinematics Solver:
 
     Implements the IKFast kinematics solver, which is used for efficient and fast inverse kinematics calculations.
 
-    5. roarm_msgs
+    6. roarm_msgs
     Message Definitions:
 
     Defines custom message types used for communication between different packages and components in the robotic arm system.
     
-    6. roarm_moveit_cmd
+    7. roarm_moveit_cmd
     Control Commands:
 
     Includes scripts and nodes for sending control commands to the robotic arm, allowing for movement and task execution.
 
-    7. roarm_moveit_servo
+    8. roarm_moveit_servo
     Roarm Control:
 
     Enables control of the robotic arm using keyboard, allowing for intuitive manual operation.
 
-    8. roarm_moveit_mtc_demo
+    9. roarm_moveit_mtc_demo
     MTC Demo:
 
     Demonstrates the use of MoveIt Task Constructor (MTC) for complex robotic arm tasks, showcasing its capabilities in automating and simplifying robotic operations.
+
+    10. roarm_vision
+    Vision Perception and Grasp Integration:
+
+    Brings in camera images (USB or OAK), runs detection and pose estimation (AprilTag, color blocks, YOLO with depth), publishes targets on TF and topics, and ties them to the real arm through pick/place services, gripper commands, and optional video streaming for monitoring.
 
 roarm_else:
 
@@ -491,3 +501,69 @@ controls="controls" width="500" height="300"></video>
 
 <video src="https://github.com/user-attachments/assets/c8d503ce-545e-49d3-a003-15dd505da9fc" 
 controls="controls" width="500" height="300"></video>
+
+## 9 Using roarm_vision (Vision and Pick / Place)
+The roarm_vision package connects a camera pipeline to simple perception nodes (AprilTag, color blob, OAK + YOLO, and similar), publishes object poses on TF, and exposes the pick_place_cmd service so the real arm can approach and grasp targets.
+
+Prerequisites
+
+Source ROS 2 Humble and this workspace, and set the arm model (same as earlier chapters):
+
+    source /opt/ros/humble/setup.bash
+    source /path/to/roarm_ws/install/setup.bash
+    export ROARM_MODEL=roarm_m2
+
+The default camera.launch.py starts a v4l2_camera node using parameters from the ugv_vision package. Install that package (or adjust the launch file / params) if it is not present.
+Nodes that talk to a Luxonis OAK device require DepthAI and a connected camera; the YOLO blob path in the node must match your workspace layout.
+Some nodes start mediamtx and GStreamer to stream annotated video to RTSP; ensure GStreamer and an RTSP viewer are available if you rely on that path.  
+### 9.1 AprilTag demo with USB camera and pick / place service
+Open a new terminal and run:
+
+ros2 launch roarm_vision demo.launch.py exe:=apriltag_detect
+This includes the camera bringup, the AprilTag node selected by exe, and the pick_place_cmd helper.
+
+In another terminal, keep the driver running on the real arm (replace the serial device if needed):
+
+    ros2 run roarm_driver roarm_driver serial_port:=/dev/ttyUSB0
+When TF shows the expected object frames (object_1 / object_2 depending on configuration), you can call pick and place through the service:
+
+    ros2 service call /pick_place_cmd roarm_msgs/srv/PickPlaceCmd "{cmd: 1, target: 1, gripper: 0.5}"
+
+    ros2 service call /pick_place_cmd roarm_msgs/srv/PickPlaceCmd "{cmd: 2, target: 0, gripper: 0.0}"
+Here cmd selects pick (1) or place (2); target selects which object frame to use; gripper sets the gripper command sent by the node.
+
+### 9.2 Other perception entry points
+You can swap the perception node by changing exe to another executable from roarm_vision, for example:
+
+ros2 launch roarm_vision demo.launch.py exe:=colorblock_detect
+For OAK + spatial YOLO (hardware required):
+
+ros2 launch roarm_vision demo.launch.py exe:=yolov8_detect_oak
+Optional launch arguments such as base_frame and cam_frame can be passed to demo.launch.py when your TF tree uses different frame names.
+
+## 10 Using roarm_gazebo (Simulation)
+The roarm_gazebo package provides worlds, models, and launch files to simulate RoArm in Gazebo Classic or GZ Harmonic, with ros2_control integration and optional RViz / MoveIt configurations.
+
+Prerequisites
+
+Build and source the workspace so roarm_gazebo and roarm_moveit are available.
+Install the Gazebo / gz-sim, ros_gz, and gz_ros2_control packages that match your chosen simulator variant on Ubuntu 22.04.
+Select the simulator backend with GZ_VERSION and the arm model with ROARM_MODEL:
+
+    source /opt/ros/humble/setup.bash
+    source /path/to/roarm_ws/install/setup.bash
+    export ROARM_MODEL=roarm_m2
+    export GZ_VERSION=classic
+Use export GZ_VERSION=harmonic when you intend to run the GZ Harmonic stack instead of Classic.
+
+### 10.1 Bring up simulation and RViz
+To start the simulator with optional RViz (configuration selectable via rviz_config):
+
+    ros2 launch roarm_gazebo bringup_gazebo.launch.py use_rviz:=true rviz_config:=roarm_moveit
+You can enable a simulated color or depth camera using add_camera / add_depth_camera if your xacro supports those mappings.
+
+### 10.2 MoveIt2 with Gazebo
+To launch MoveIt’s move_group together with the Gazebo bringup (internally includes bringup_gazebo.launch.py with a MoveIt-oriented RViz setup):
+
+    ros2 launch roarm_gazebo moveit_gazebo.launch.py
+Use this flow to plan and execute in RViz against the simulated controllers before moving commands to the physical arm.

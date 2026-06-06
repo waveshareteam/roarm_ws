@@ -1,0 +1,241 @@
+<?xml version="1.0"?>
+<robot name="physics">
+
+  <link name="gripper_base">
+    <inertial>
+      <origin xyz="0.013773 0 0.00979475" rpy="0 0 0" />
+      <mass value="0.015597" />
+      <inertia ixx="9.89766E-06" ixy="0" ixz="0" iyy="1.04422E-05" iyz="0" izz="1.51667E-05" />
+    </inertial>  
+    <visual>
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_base.stl"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="silver"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_base.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="gripper_link">
+    <inertial>
+      <origin xyz="0 0 -0.005" rpy="0 0 0" />
+      <mass value="0.0021088" />
+      <inertia ixx="2.96462E-07" ixy="0" ixz="0" iyy="2.96462E-07" iyz="0" izz="5.57778E-07" />
+    </inertial> 
+    <visual>
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link.stl"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="silver"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="gripper_left1">
+    <inertial>
+      <origin xyz="0.0189 0 -0.00325" rpy="0 0 0" />
+      <mass value="0.0019081" />
+      <inertia ixx="9.02348E-08" ixy="0" ixz="0" iyy="5.9237E-07" iyz="0" izz="6.69169E-07" />
+    </inertial> 
+    <visual>
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link1.stl"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="silver"/>
+    </visual>
+    <!-- <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link1.stl"/>
+      </geometry>
+    </collision> -->
+  </link>
+
+  <link name="gripper_left2">
+    <inertial>
+      <origin xyz="0.0215 0 -0.00075" rpy="0 0 0" />
+      <mass value="0.0006743" />
+      <inertia ixx="8.21803E-09" ixy="0" ixz="0" iyy="1.71345E-07" iyz="0" izz="1.7931E-07" />
+    </inertial> 
+    <visual>
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link2.stl"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="silver"/>
+    </visual>
+    <!-- <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link2.stl"/>
+      </geometry>
+    </collision> -->
+  </link>
+  
+  <link name="gripper_left3">
+    <inertial>
+      <origin xyz="0.02875 -0.0133 0.00075" rpy="0 0 0" />
+      <mass value="0.0010666" />
+      <inertia ixx="2.71202E-07" ixy="0" ixz="0" iyy="5.69245E-07" iyz="0" izz="5.63087E-07" />
+    </inertial> 
+    <visual>
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link3.stl"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="silver"/>
+    </visual>
+    <!-- <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link3.stl"/>
+      </geometry>
+    </collision> -->
+  </link>
+
+  <link name="gripper_right1">
+    <inertial>
+      <origin xyz="0.0189 0 -0.00325" rpy="0 0 0" />
+      <mass value="0.0019081" />
+      <inertia ixx="9.02348E-08" ixy="0" ixz="0" iyy="5.9237E-07" iyz="0" izz="6.69169E-07" />
+    </inertial> 
+    <visual>
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link1.stl"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="silver"/>
+    </visual>
+    <!-- <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link1.stl"/>
+      </geometry>
+    </collision> -->
+  </link>
+
+  <link name="gripper_right2">
+    <inertial>
+      <origin xyz="0.0215 0 -0.00075" rpy="0 0 0" />
+      <mass value="0.0006743" />
+      <inertia ixx="8.21803E-09" ixy="0" ixz="0" iyy="1.71345E-07" iyz="0" izz="1.7931E-07" />
+    </inertial> 
+    <visual>
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link2.stl"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="silver"/>
+    </visual>
+    <!-- <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link2.stl"/>
+      </geometry>
+    </collision> -->
+  </link>
+  
+  <link name="gripper_right3">
+    <inertial>
+      <origin xyz="0.02875 0.0133 -0.00075" rpy="0 0 0" />
+      <mass value="0.0010666" />
+      <inertia ixx="2.71202E-07" ixy="0" ixz="0" iyy="5.69245E-07" iyz="0" izz="5.63087E-07" />
+    </inertial> 
+    <visual>
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link3.stl"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="-3.14 0 0"/>
+      <material name="silver"/>
+    </visual>
+    <!-- <collision>
+      <origin xyz="0 0 0" rpy="-3.14 0 0" />
+      <geometry>
+        <mesh filename="file://$(find roarm_description)/meshes/gripper/gripper_a/gripper_link3.stl"/>
+      </geometry>
+    </collision> -->
+  </link>
+
+  <joint name="gripper_joint" type="revolute">
+    <axis xyz="0 0 -1"/>
+    <limit effort="1000.0" lower="0" upper="1.57" velocity="0.5"/>
+    <parent link="gripper_base"/>
+    <child link="gripper_link"/>
+    <origin xyz="0.021591 0.01250 -0.012658" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="gripper_left_joint1" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-1.57" upper="1.57" velocity="0.5"/>
+    <parent link="gripper_base"/>
+    <child link="gripper_left1"/>
+    <origin xyz="0.04296 0.01050 -0.015458" rpy="0 0 0"/>
+    <mimic joint="gripper_joint" multiplier="1" offset="0"/>
+  </joint>
+
+  <joint name="gripper_left_joint2" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-1.57" upper="1.57" velocity="0.5"/>
+    <parent link="gripper_base"/>
+    <child link="gripper_left2"/>
+    <origin xyz="0.021496 0.03150 -0.003458" rpy="0 0 0"/>
+    <mimic joint="gripper_joint" multiplier="1" offset="0"/>
+  </joint>
+
+  <joint name="gripper_left_joint3" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-1.57" upper="1.57" velocity="0.5"/>
+    <parent link="gripper_left2"/>
+    <child link="gripper_left3"/>
+    <origin xyz="0.04320 0 -0.00750" rpy="0 0 0"/>
+    <mimic joint="gripper_joint" multiplier="-1" offset="0"/>
+  </joint>
+
+  <joint name="gripper_right_joint1" type="revolute">
+    <axis xyz="0 0 -1"/>
+    <limit effort="1000.0" lower="-1.57" upper="1.57" velocity="0.5"/>
+    <parent link="gripper_base"/>
+    <child link="gripper_right1"/>
+    <origin xyz="0.04296 -0.01050 -0.015458" rpy="0 0 0"/>
+    <mimic joint="gripper_joint" multiplier="1" offset="0"/>
+  </joint>
+
+  <joint name="gripper_right_joint2" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-1.57" upper="1.57" velocity="0.5"/>
+    <parent link="gripper_base"/>
+    <child link="gripper_right2"/>
+    <origin xyz="0.021496 -0.03150 -0.003458" rpy="0 0 0"/>
+    <mimic joint="gripper_joint" multiplier="-1" offset="0"/>
+  </joint>
+
+  <joint name="gripper_right_joint3" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-1.57" upper="1.57" velocity="0.5"/>
+    <parent link="gripper_right2"/>
+    <child link="gripper_right3"/>
+    <origin xyz="0.04320 0 -0.0060" rpy="0 0 0"/>
+    <mimic joint="gripper_joint" multiplier="1" offset="0"/>
+  </joint>
+
+  <joint name="link3_to_hand_tcp" type="fixed">
+    <origin xyz="0.002 -0.2802 0" rpy="1.5708 0 -1.5708" />
+    <parent link="link3" />
+    <child link="hand_tcp" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+</robot>

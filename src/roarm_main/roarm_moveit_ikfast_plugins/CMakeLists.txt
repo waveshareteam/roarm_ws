@@ -45,14 +45,7 @@ ament_target_dependencies(roarm_m3_hand_moveit_ikfast_plugin
 target_compile_options(roarm_m2_hand_moveit_ikfast_plugin PRIVATE -Wno-unused-variable -Wno-unused-parameter)
 target_compile_options(roarm_m3_hand_moveit_ikfast_plugin PRIVATE -Wno-unused-variable -Wno-unused-parameter)
 
-install(TARGETS roarm_m2_hand_moveit_ikfast_plugin
-  EXPORT export_${PROJECT_NAME}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-install(TARGETS roarm_m3_hand_moveit_ikfast_plugin
+install(TARGETS roarm_m2_hand_moveit_ikfast_plugin roarm_m3_hand_moveit_ikfast_plugin
   EXPORT export_${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

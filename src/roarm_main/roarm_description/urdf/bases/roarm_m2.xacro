@@ -4,6 +4,9 @@
 <xacro:arg name="add_depth_camera" default="false"/>
 <xacro:property name="add_depth_camera" value="$(arg add_depth_camera)"/>
 
+<xacro:arg name="gripper_type" default="angular_gear"/>
+<xacro:property name="gripper_type" value="$(arg gripper_type)"/>
+
 <xacro:include filename="$(find roarm_description)/urdf/materials.xacro" />
 <xacro:include filename="$(find roarm_description)/urdf/gazebo/roarm_m2.trans" />
 <xacro:include filename="$(find roarm_description)/urdf/gazebo/roarm_m2.gazebo" />
@@ -21,7 +24,7 @@
 
 <link name="base_link">
   <inertial>
-    <origin xyz="0.0032 0 0.04" rpy="0 0 0" />
+    <origin xyz="0.0032 0 0.0417" rpy="0 0 0" />
     <mass value="0.2562183" />
     <inertia ixx="0.00029211" ixy="0" ixz="0" iyy="0.00035719" iyz="0" izz="0.000349421" />
   </inertial>
@@ -63,7 +66,7 @@
 
 <link name="link2">
   <inertial>
-    <origin xyz="0.122 0 0" rpy="0 0 0" />
+    <origin xyz="0.11841 0.012245 0" rpy="0 0 0" />
     <mass value="0.0703216" />
     <inertia ixx="5.46501E-05" ixy="0" ixz="0" iyy="0.000423091" iyz="0" izz="0.000404557" />
   </inertial>
@@ -84,9 +87,9 @@
 
 <link name="link3">
   <inertial>
-    <origin xyz="0.002 -0.13687 0.0059" rpy="0 0 0" />
-    <mass value="0.0269773" />
-    <inertia ixx="0.000199591" ixy="0" ixz="0" iyy="8.01674E-06" iyz="0" izz="0.000196918" />
+    <origin xyz="-0.0015735 -0.083617 -0.00085" rpy="0 0 0" />
+    <mass value="0.0181535" />
+    <inertia ixx="5.50661E-05" ixy="0" ixz="0" iyy="3.08352E-06" iyz="0" izz="5.43323E-05" />
   </inertial>
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
@@ -99,27 +102,6 @@
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
       <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/link3.stl"  scale="1.0 1.0 1.0"/>
-    </geometry>
-  </collision>
-</link>
-
-<link name="gripper_link">
-  <inertial>
-    <origin xyz="0.029 0.0027 -0.00078" rpy="0 0 0" />
-    <mass value="0.0028708" />
-    <inertia ixx="5.23216E-07" ixy="0" ixz="0" iyy="1.82071E-06" iyz="0" izz="1.60231E-06" />
-  </inertial>
-  <visual>
-    <origin xyz="0 0 0" rpy="0 0 0" />
-    <geometry>
-      <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/gripper_link.stl"  scale="1.0 1.0 1.0"/>
-    </geometry>
-    <material name="silver"/>
-  </visual>
-  <collision>
-    <origin xyz="0 0 0" rpy="0 0 0" />
-    <geometry>
-      <mesh filename="file://$(find roarm_description)/meshes/roarm_m2/gripper_link.stl"  scale="1.0 1.0 1.0"/>
     </geometry>
   </collision>
 </link>
@@ -150,26 +132,31 @@
 </joint>
 
 <joint name="link2_to_link3" type="revolute">
-  <origin xyz="0.236815132922094 0.0300023995170449 0" rpy="0 0 1.5708" />
+  <origin xyz="0.236774 0.0300023995170449 0" rpy="0 0 1.5708" />
   <parent link="link2" />
   <child  link="link3" />
   <axis xyz="0 0 1" />
   <limit lower="-1" upper="2.95" effort="0" velocity="0" />
 </joint>
 
-<joint name="link3_to_gripper_link" type="revolute">
-  <origin xyz="0.002906 -0.21599 -0.00066683" rpy="-1.5708 0 -1.5708" />
-  <parent link="link3" />
-  <child link="gripper_link" />
-  <axis xyz="0 0 1" />
-  <limit lower="0" upper="1.5" effort="0" velocity="0" />
-</joint>
+<xacro:if value="${gripper_type == 'angular_direct'}">
+  <xacro:include filename="$(find roarm_description)/urdf/gripper/gripper.xacro" />
+  <joint name="link3_to_gripper_base" type="fixed">
+    <origin xyz="0.002906 -0.21599 -0.00066683" rpy="1.5708 0 -1.5708" />
+    <parent link="link3" />
+    <child link="gripper_base" />
+    <axis xyz="0 0 1" />
+  </joint>
+</xacro:if>
 
-<joint name="link3_to_hand_tcp" type="fixed">
-  <origin xyz="0.002 -0.2802 0" rpy="1.5708 0 -1.5708" />
-  <parent link="link3" />
-  <child link="hand_tcp" />
-  <axis xyz="0 0 0" />
-</joint>
+<xacro:if value="${gripper_type == 'angular_gear'}">
+  <xacro:include filename="$(find roarm_description)/urdf/gripper/gripper_a.xacro" />
+  <joint name="link3_to_gripper_base" type="fixed">
+    <origin xyz="-0.002998 -0.186601 -0.000835" rpy="1.5708 0 -1.5708" />
+    <parent link="link3" />
+    <child link="gripper_base" />
+    <axis xyz="0 0 1" />
+  </joint>
+</xacro:if>
   
 </robot>

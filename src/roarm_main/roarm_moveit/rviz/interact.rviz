@@ -87,7 +87,42 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          gripper_base:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_left1:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_left2:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_left3:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           gripper_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_right1:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_right2:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_right3:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -107,16 +142,6 @@ Visualization Manager:
             Show Trail: false
             Value: true
           link3:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          link4:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          link5:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -176,7 +201,42 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          gripper_base:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_left1:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_left2:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_left3:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           gripper_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_right1:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_right2:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_right3:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -196,16 +256,6 @@ Visualization Manager:
             Show Trail: false
             Value: true
           link3:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          link4:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          link5:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -242,7 +292,42 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        gripper_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_left1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_left2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_left3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         gripper_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_right1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_right2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_right3:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -262,16 +347,6 @@ Visualization Manager:
           Show Trail: false
           Value: true
         link3:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        link4:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        link5:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -289,47 +364,19 @@ Visualization Manager:
       Value: true
       Visual Enabled: true
     - Class: rviz_default_plugins/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_link:
-          Value: false
-        gripper_link:
-          Value: true
-        hand_tcp:
-          Value: false
-        link1:
-          Value: true
-        link2:
-          Value: true
-        link3:
-          Value: true
-        link4:
-          Value: false
-        link5:
-          Value: false
-        world:
-          Value: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: false
       Tree:
-        world:
-          base_link:
-            link1:
-              link2:
-                link3:
-                  link4:
-                    link5:
-                      gripper_link:
-                        {}
-                      hand_tcp:
-                        {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -431,18 +478,18 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.17343944311141968
-        Y: 0.04336652532219887
-        Z: 0.35658174753189087
+        X: 0.20624808967113495
+        Y: -0.029198478907346725
+        Z: 0.2822795808315277
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.11539816856384277
+      Pitch: 0.32039836049079895
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.278582572937012
+      Yaw: 5.978577613830566
     Saved: ~
 Window Geometry:
   Displays:
@@ -467,4 +514,4 @@ Window Geometry:
     collapsed: false
   Width: 1200
   X: 1020
-  Y: 410
+  Y: 386
