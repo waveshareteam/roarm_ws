@@ -24,7 +24,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'yolov8_detect_gazebo = roarm_vision.yolov8_detect_gazebo:main',
             'apriltag_detect = roarm_vision.apriltag_detect:main',
             'color_block_detect = roarm_vision.color_block_detect:main',
             'pick_place_cmd = roarm_vision.pick_place_cmd:main',
