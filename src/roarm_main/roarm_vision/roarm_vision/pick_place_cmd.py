@@ -420,7 +420,7 @@ class PickPlaceCmdNode(Node):
                 err_x = obj_x - grip_x
                 err_y = obj_y - grip_y - diff
             else:
-                err_x = obj_x - grip_x - diff
+                err_x = obj_x - grip_x
                 err_y = obj_y - grip_y
 
             err_dist = math.sqrt(err_x**2 + err_y**2)
