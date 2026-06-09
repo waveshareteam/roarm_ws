@@ -5,6 +5,12 @@ class RoArmM2:
     ARM_L2_LENGTH_MM_A = 236.82
     ARM_L2_LENGTH_MM_B = 30.00
     ARM_L3_LENGTH_MM_A_0 = 280.15
+    ARM_L3_LENGTH_MM_A_1 = 188.111
+    ARM_GRIPPER_L1 = 40.986
+    ARM_GRIPPER_L2 = 43.20 
+    ARM_GRIPPER_L3 = 30.358 
+    ARM_GRIPPER_D1 = 10.50 
+    ARM_GRIPPER_D2 = 11.32 
     ARM_L3_LENGTH_MM_B_0 = 1.73
     ARM_L4_LENGTH_MM_A = 67.85
     ARM_L4_LENGTH_MM_B = 5.98
@@ -46,11 +52,14 @@ class RoArmM2:
     def cartesian_to_polar(self, x, y):
         return math.sqrt(x ** 2 + y ** 2), math.atan2(y, x)
 
-    def simple_linkage_ik_rad(self, aIn, bIn):
+    def simple_linkage_ik_rad(self, aIn, bIn, gripper):
         def safe_acos(v):
             return math.acos(max(-1.0, min(1.0, v)))
 
         LA = self.l2
+        if gripper != 0:
+            self.l3A = self.ARM_L3_LENGTH_MM_A_1 + self.ARM_GRIPPER_L1 + self.ARM_GRIPPER_L2*math.cos(gripper) + self.ARM_GRIPPER_L3
+            self.l3 = math.sqrt(self.l3A ** 2 + self.l3B ** 2)
         LB = self.l3
 
         if abs(bIn) < 1e-6:
@@ -94,7 +103,7 @@ class RoArmM2:
 
     def compute_joint_rad_by_pos(self, x, y, z, t):
         r, theta = self.cartesian_to_polar(x, y)
-        shoulder, elbow = self.simple_linkage_ik_rad(r, z)
+        shoulder, elbow = self.simple_linkage_ik_rad(r, z, t)
         return theta, shoulder, elbow
 
     def set_EEMode(self, mode):

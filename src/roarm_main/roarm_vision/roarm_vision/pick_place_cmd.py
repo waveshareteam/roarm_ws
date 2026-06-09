@@ -29,10 +29,11 @@ from math import isnan
 from collections import deque
 from .roarm_solver import RoArmM2, RoArmM3
 
-model = os.environ['ROARM_MODEL']
-if model == 'roarm_m2':
+roarm_model = os.environ['ROARM_MODEL']
+gripper_type = os.environ['GRIPPER_TYPE']
+if roarm_model == 'roarm_m2':
     roarm = RoArmM2()
-elif model == 'roarm_m3':
+elif roarm_model == 'roarm_m3':
     roarm = RoArmM3()
 
 class GripperPublisherNode(Node):
@@ -75,14 +76,14 @@ class HandPublisherNode(Node):
 
         self.traj_points = []
 
-        if model == "roarm_m2":
+        if roarm_model  == "roarm_m2":
             self.last_point = [0.0, 0.0, 2.618]
 
-        elif model == "roarm_m3":
+        elif roarm_model  == "roarm_m3":
             self.last_point = [0.0, 0.0, 2.618, -1.0472, 0.0]
 
         self.get_logger().info(
-            f"HandPublisherNode initialized with model: {model}"
+            f"HandPublisherNode initialized with roarm_model : {roarm_model}"
         )
 
     def add_point(self, joint_positions, duration=1.5, max_speed=0.5):
@@ -122,14 +123,14 @@ class HandPublisherNode(Node):
             + Duration(seconds=0.1)
         ).to_msg()
 
-        if model == "roarm_m2":
+        if roarm_model  == "roarm_m2":
             traj.joint_names = [
                 "base_link_to_link1",
                 "link1_to_link2",
                 "link2_to_link3"
             ]
 
-        elif model == "roarm_m3":
+        elif roarm_model  == "roarm_m3":
             traj.joint_names = [
                 "base_link_to_link1",
                 "link1_to_link2",
@@ -396,7 +397,7 @@ class PickPlaceCmdNode(Node):
         return self.current_xyz
 
     def visual_servo_tf(self, target_frame, timeout=10.0, 
-                        tolerance_mm=5.0, dead_zone_mm=3.0, y_diff=20.0):
+                        tolerance_mm=5.0, dead_zone_mm=3.0, diff=20.0):
         pid_x = SimplePID(kp=0.8, ki=0.0, kd=0.00)
         pid_y = SimplePID(kp=0.7, ki=0.0, kd=0.05)
 
@@ -411,12 +412,17 @@ class PickPlaceCmdNode(Node):
                 continue
 
             obj_x = pose_obj.position.x * 1000
-            obj_y = pose_obj.position.y * 1000 + y_diff
+            obj_y = pose_obj.position.y * 1000 + diff
 
             grip_x, grip_y, grip_z = self.get_current_position_mm()
 
-            err_x = obj_x - grip_x - y_diff
-            err_y = obj_y - grip_y
+            if gripper_type == 'angular_gear':
+                err_x = obj_x - grip_x
+                err_y = obj_y - grip_y - diff
+            else:
+                err_x = obj_x - grip_x - diff
+                err_y = obj_y - grip_y
+
             err_dist = math.sqrt(err_x**2 + err_y**2)
 
             self.get_logger().info(f"servo err: x={err_x:.1f} y={err_y:.1f} mm")
@@ -474,9 +480,9 @@ class PickPlaceCmdNode(Node):
 
         target_frame=f"object_{target}"
 
-        if model=='roarm_m2':
+        if roarm_model =='roarm_m2':
             home=[0.0, 0.0, 2.618]
-        elif model=='roarm_m3':
+        elif roarm_model =='roarm_m3':
             home=[0.0, 0.0, 1.5708, 1.5708, 0.0]
 
         self.hand_node.add_point(home)
@@ -505,9 +511,12 @@ class PickPlaceCmdNode(Node):
 
         x, y, z = self.standoff_xyz(x, y, z, d_mm=100.0)
 
-        if model=='roarm_m2':
-            angles_first = roarm.compute_joint_rad_by_pos(x, y, z, 0.0)
-        elif model=='roarm_m3':
+        if roarm_model =='roarm_m2':
+            if gripper_type == 'angular_gear':
+                angles_first = roarm.compute_joint_rad_by_pos(x, y, z, gripper)
+            else:
+                angles_first = roarm.compute_joint_rad_by_pos(x, y, z, 0)
+        elif roarm_model =='roarm_m3':
             rot = R.from_quat([
                 pose.orientation.x,
                 pose.orientation.y,
@@ -552,9 +561,12 @@ class PickPlaceCmdNode(Node):
         y = pose.position.y * 1000 + 30
         z = pose.position.z * 1000 - 87.459 + 50
 
-        if model=='roarm_m2':
-            angles_second = roarm.compute_joint_rad_by_pos(x, y, z, 0.0)
-        elif model=='roarm_m3':
+        if roarm_model =='roarm_m2':
+            if gripper_type == 'angular_gear':
+                angles_second = roarm.compute_joint_rad_by_pos(x, y, z, gripper)
+            else:
+                angles_second = roarm.compute_joint_rad_by_pos(x, y, z, 0)
+        elif roarm_model =='roarm_m3':
             rot = R.from_quat([
                 pose.orientation.x,
                 pose.orientation.y,
@@ -585,16 +597,16 @@ class PickPlaceCmdNode(Node):
 
         self.current_xyz = [x, y, z]
 
-        aligned = self.visual_servo_tf(target_frame, timeout=10.0, tolerance_mm=4.0,y_diff=30.0)
+        aligned = self.visual_servo_tf(target_frame, timeout=10.0, tolerance_mm=4.0,diff=30.0)
         if not aligned:
             self.hand_node.add_point(home)
             self.hand_node.publish_trajectory()
             return False
 
         ax, ay, az = self.get_current_position_mm()
-        if model=='roarm_m2':
-            angles = roarm.compute_joint_rad_by_pos(ax, ay, az, 0.0)
-        elif model=='roarm_m3':
+        if roarm_model =='roarm_m2':
+            angles = roarm.compute_joint_rad_by_pos(ax, ay, az, 0.0)         
+        elif roarm_model =='roarm_m3':
             rot = R.from_quat([
                 pose.orientation.x,
                 pose.orientation.y,
@@ -639,9 +651,9 @@ class PickPlaceCmdNode(Node):
 
         target_frame=f"object_{target}"
 
-        if model=='roarm_m2':
+        if roarm_model =='roarm_m2':
             home=[0.0, 0.0, 2.618]
-        elif model=='roarm_m3':
+        elif roarm_model =='roarm_m3':
             home=[0.0, 0.0, 1.5708, 1.5708, 0.0]
 
         self.hand_node.add_point(home)
@@ -670,9 +682,12 @@ class PickPlaceCmdNode(Node):
 
         x, y, z = self.standoff_xyz(x, y, z, d_mm=100.0)
 
-        if model=='roarm_m2':
-            angles_first = roarm.compute_joint_rad_by_pos(x, y, z, 0.0)
-        elif model=='roarm_m3':
+        if roarm_model =='roarm_m2':
+            if gripper_type == 'angular_gear':
+                angles_first = roarm.compute_joint_rad_by_pos(x, y, z, gripper)
+            else:
+                angles_first = roarm.compute_joint_rad_by_pos(x, y, z, 0)
+        elif roarm_model =='roarm_m3':
             rot = R.from_quat([
                 pose.orientation.x,
                 pose.orientation.y,
@@ -717,9 +732,12 @@ class PickPlaceCmdNode(Node):
         y = pose.position.y * 1000 + 20
         z = pose.position.z * 1000 - 87.459 + 50
 
-        if model=='roarm_m2':
-            angles_second = roarm.compute_joint_rad_by_pos(x, y, z, 0.0)
-        elif model=='roarm_m3':
+        if roarm_model =='roarm_m2':
+            if gripper_type == 'angular_gear':
+                angles_second = roarm.compute_joint_rad_by_pos(x, y, z, gripper)
+            else:
+                angles_second = roarm.compute_joint_rad_by_pos(x, y, z, 0)
+        elif roarm_model =='roarm_m3':
             rot = R.from_quat([
                 pose.orientation.x,
                 pose.orientation.y,
@@ -750,16 +768,19 @@ class PickPlaceCmdNode(Node):
 
         self.current_xyz = [x, y, z]
 
-        aligned = self.visual_servo_tf(target_frame, timeout=10.0, tolerance_mm=4.0,y_diff=20.0)
+        aligned = self.visual_servo_tf(target_frame, timeout=10.0, tolerance_mm=4.0,diff=20.0)
         if not aligned:
             self.hand_node.add_point(home)
             self.hand_node.publish_trajectory()
             return False
 
         ax, ay, az = self.get_current_position_mm()
-        if model=='roarm_m2':
-            angles = roarm.compute_joint_rad_by_pos(ax, ay, az-60, 0.0)
-        elif model=='roarm_m3':
+        if roarm_model =='roarm_m2':
+            if gripper_type == 'angular_gear':
+                angles = roarm.compute_joint_rad_by_pos(ax, ay, az-60, gripper)
+            else:
+                angles = roarm.compute_joint_rad_by_pos(ax, ay, az-60, 0)   
+        elif roarm_model =='roarm_m3':
             rot = R.from_quat([
                 pose.orientation.x,
                 pose.orientation.y,
@@ -806,9 +827,9 @@ class PickPlaceCmdNode(Node):
 
         self.get_logger().info("Start Place")
 
-        if model=='roarm_m2':
+        if roarm_model =='roarm_m2':
             home=[1.5708, 0.0, 2.618]
-        elif model=='roarm_m3':
+        elif roarm_model =='roarm_m3':
             home=[1.5708, 0.0, 2.618, 0.0, 0.0]
 
         self.hand_node.add_point(home)
@@ -820,9 +841,9 @@ class PickPlaceCmdNode(Node):
 
         self.gripper_node.publish_gripper_cmd(0.0)
 
-        if model=='roarm_m2':
+        if roarm_model =='roarm_m2':
             back=[0.0, 0.0, 2.618]
-        elif model=='roarm_m3':
+        elif roarm_model =='roarm_m3':
             back=[0.0, 0.0, 2.618, 0.0, 0.0]
 
         self.hand_node.add_point(back)

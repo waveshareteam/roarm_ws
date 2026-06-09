@@ -1,7 +1,7 @@
 /**:
     ros__parameters:
-      # video_device: "/dev/video0"
-      video_device: "/dev/camera"
+      video_device: "/dev/video0"
+      # video_device: "/dev/camera"
       framerate: 30.0
       io_method: "mmap"
       camera_frame_id: "camera_link"
