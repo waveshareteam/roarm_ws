@@ -21,6 +21,7 @@ PACKAGES=(
   roarm_driver
   roarm_moveit
   roarm_vision
+  roarm_gazebo
 )
 
 echo "=============================="

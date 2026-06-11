@@ -209,7 +209,7 @@ colcon build \
 
 colcon build \
   --packages-select \
-    roarm_description roarm_driver roarm_moveit roarm_vision \
+    roarm_description roarm_driver roarm_moveit roarm_vision roarm_gazebo \
   --symlink-install \
   --executor sequential
 
