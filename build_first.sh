@@ -191,13 +191,15 @@ echo
 echo "[6/7] Building workspace: $WS"
 cd "$WS" || exit 1
 
+colcon build --packages-select roarm_msgs --symlink-install
+source install/setup.bash
+
 colcon build \
   --packages-select \
-    roarm_msgs \
     moveit_servo \
     rviz_marker_tools \
     moveit_task_constructor_msgs moveit_task_constructor_core \
-    moveit_task_constructor_capabilities moveit_task_constructor_visualization gz_ros2_control \
+    moveit_task_constructor_capabilities moveit_task_constructor_visualization gazebo_ros2_control \
     roarm_moveit_cmd \
     roarm_moveit_ikfast_plugins \
     roarm_moveit_mtc_demo \

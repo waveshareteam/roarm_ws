@@ -17,7 +17,6 @@ find_package(moveit_task_constructor_core REQUIRED)
 find_package(moveit_task_constructor_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(tf2_eigen REQUIRED)
-find_package(apriltag_msgs REQUIRED)
 find_package(depthai_ros_msgs REQUIRED)
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
@@ -28,7 +27,6 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
 	moveit_task_constructor_msgs
 	rclcpp
 	tf2_eigen
-	apriltag_msgs
 	depthai_ros_msgs
 )
 
