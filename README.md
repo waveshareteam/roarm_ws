@@ -8,14 +8,12 @@
 
 ## Documentation
 
-Full tutorials live under [`docs/`](docs/) and are built with **MkDocs**.
+Tutorials live in [`docs/`](docs/). On GitHub, open any `.md` file to read the rendered preview — no Wiki or separate site required.
 
 | | |
 |---|---|
-| **Read online** | [roarm-ws.readthedocs.io](https://roarm-ws.readthedocs.io/) |
-| **Build locally** | `pip install -r docs/requirements.txt` then `mkdocs build` (output in `site/`) |
-| **Preview** | `mkdocs serve -a 0.0.0.0:8000` → http://ip:8000 |
-| **Host on RTD** | [`.readthedocs.yaml`](.readthedocs.yaml) |
+| **Browse on GitHub** | [docs/](https://github.com/waveshareteam/roarm_ws/tree/ros2-humble-develop-251125/docs) — start with [index.md](https://github.com/waveshareteam/roarm_ws/blob/ros2-humble-develop-251125/docs/index.md) |
+| **Optional local site** | `pip install -r docs/requirements.txt` then `mkdocs serve` (sidebar nav + lightbox; same source files) |
 
 ### Chapters
 
