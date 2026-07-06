@@ -1,0 +1,21 @@
+2026/06/17 02:04:10 INF MediaMTX v1.13.1
+2026/06/17 02:04:10 INF configuration loaded from /home/ws/roarm_ws/src/roarm_main/roarm_vision/roarm_vision/Mediamtx/mediamtx.yml
+2026/06/17 02:04:10 INF [RTSP] listener opened on :8554 (TCP), :8000 (UDP/RTP), :8001 (UDP/RTCP)
+2026/06/17 02:04:10 INF [WebRTC] listener opened on :8889 (HTTP), :8189 (ICE/UDP)
+2026/06/17 02:04:10 INF [RTSP] [conn [::1]:39780] opened
+2026/06/17 02:04:13 INF [RTSP] [session f4cc42af] created by [::1]:39780
+2026/06/17 02:04:14 INF [RTSP] [session f4cc42af] is publishing to path 'cam', 1 track (H264)
+2026/06/17 02:04:20 INF [WebRTC] [session 0f05be9e] created by 192.168.9.130:56885
+2026/06/17 02:04:20 INF [WebRTC] [session 0f05be9e] peer connection established, local candidate: host/udp/127.0.0.1/8189, remote candidate: prflx/udp/192.168.9.130/53484
+2026/06/17 02:04:20 INF [WebRTC] [session 0f05be9e] is reading from path 'cam', 1 track (H264)
+2026/06/17 02:04:20 INF [WebRTC] [session 6d29e4cf] created by 192.168.9.130:63686
+2026/06/17 02:04:20 INF [WebRTC] [session 6d29e4cf] peer connection established, local candidate: host/udp/127.0.0.1/8189, remote candidate: prflx/udp/192.168.9.130/53488
+2026/06/17 02:04:20 INF [WebRTC] [session 6d29e4cf] is reading from path 'cam', 1 track (H264)
+2026/06/17 02:15:55 INF shutting down gracefully
+2026/06/17 02:15:55 INF [WebRTC] [session 0f05be9e] closed: terminated
+2026/06/17 02:15:55 INF [WebRTC] [session 6d29e4cf] closed: terminated
+2026/06/17 02:15:55 INF [WebRTC] listener is closing
+2026/06/17 02:15:55 INF [RTSP] listener is closing
+2026/06/17 02:15:55 INF [RTSP] [conn [::1]:39780] closed: terminated
+2026/06/17 02:15:55 INF [RTSP] [session f4cc42af] destroyed: terminated
+2026/06/17 02:15:55 INF waiting for running hooks

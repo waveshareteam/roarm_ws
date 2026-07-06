@@ -91,8 +91,7 @@ case "$GAZEBO_CHOICE" in
       gazebo \
       gazebo-common \
       gazebo-plugin-base \
-      ros-humble-gazebo-ros-pkgs \
-      ros-humble-gazebo-ros2-control
+      ros-humble-gazebo-ros-pkgs
 
     GZ_VERSION="classic"
     GAZEBO_INSTALLED=true

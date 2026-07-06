@@ -9,6 +9,12 @@ namespace roarm_m2 {
 #define ARM_L2_LENGTH_MM_A  236.82
 #define ARM_L2_LENGTH_MM_B  30.00 
 #define ARM_L3_LENGTH_MM_A_0  280.15
+#define ARM_L3_LENGTH_MM_A_1 188.111
+#define ARM_GRIPPER_L1 40.986
+#define ARM_GRIPPER_L2 43.20 
+#define ARM_GRIPPER_L3 30.358 
+#define ARM_GRIPPER_D1 10.50 
+#define ARM_GRIPPER_D2 11.32 
 #define ARM_L3_LENGTH_MM_B_0  1.73
 #define ARM_L4_LENGTH_MM_A  67.85
 #define ARM_L4_LENGTH_MM_B  5.98
@@ -20,7 +26,7 @@ static double l2  = sqrt(l2A * l2A + l2B * l2B);
 static double t2rad = atan2(l2B, l2A);
 static double l3A = ARM_L3_LENGTH_MM_A_0;
 static double l3B = ARM_L3_LENGTH_MM_B_0;
-static double l3  = sqrt(l3A * l3A + l3B * l3B);
+double l3  = sqrt(l3A * l3A + l3B * l3B);
 static double t3rad = atan2(l3B, l3A);
 
 static double BASE_point_RAD = 0;
@@ -63,10 +69,17 @@ static double lastY = goalY;
 static double lastZ = goalZ;
 static double lastT = goalT;
 
-std::array<double, 2> simpleLinkageIkRad(double aIn, double bIn) {
+std::array<double, 2> simpleLinkageIkRad(double aIn, double bIn, double gripper) {
     double psi, alpha, omega, beta, L2C, LC, lambda, delta, LA, LB;
     LA = l2;
+
+    if(gripper != 0){
+      l3A = ARM_L3_LENGTH_MM_A_1 + ARM_GRIPPER_L1 + ARM_GRIPPER_L2*cos(gripper) + ARM_GRIPPER_L3;
+       l3 = sqrt(l3A * l3A + l3B *l3B);
+    }
+
     LB = l3;
+
     if (fabs(bIn) < 1e-6) {
         psi = acos((LA * LA + aIn * aIn - LB * LB) / (2 * LA * aIn)) + t2rad;
         alpha = M_PI / 2.0 - psi;
@@ -106,13 +119,18 @@ void polarToCartesian(double r, double theta, double &x, double &y) {
   y = r * sin(theta);
 }
 
-std::array<double, 5>  computePosbyJointRad(double base_joint_rad, double shoulder_joint_rad, double elbow_joint_rad, double hand_joint_rad) {
+std::array<double, 6>  computePosbyJointRad(double base_joint_rad, double shoulder_joint_rad, double elbow_joint_rad, double hand_joint_rad) {
   if (EEMode == 0) {
     // the end of the arm.
     double r_ee, x_ee, y_ee, z_ee;
 
     // compute the end position of the first linkage(the linkage between baseJoint and shoulderJoint).
     double aOut, bOut, cOut, dOut, eOut, fOut;
+
+    if(hand_joint_rad != 0){
+      l3A = ARM_L3_LENGTH_MM_A_1 + ARM_GRIPPER_L1 + ARM_GRIPPER_L2*cos(hand_joint_rad) + ARM_GRIPPER_L3;
+       l3 = sqrt(l3A * l3A + l3B *l3B);
+    }
 
     polarToCartesian(l2, ((M_PI / 2) - (shoulder_joint_rad + t2rad)), aOut, bOut);
     polarToCartesian(l3, ((M_PI / 2) - (elbow_joint_rad + shoulder_joint_rad)), cOut, dOut);
@@ -127,6 +145,7 @@ std::array<double, 5>  computePosbyJointRad(double base_joint_rad, double should
     lastX = x_ee;
     lastY = y_ee;
     lastZ = z_ee;
+    lastT = hand_joint_rad;
   }
   else if (EEMode == 1) {
     double aOut, bOut,   cOut, dOut,   eOut, fOut,   gOut, hOut;
@@ -146,13 +165,13 @@ std::array<double, 5>  computePosbyJointRad(double base_joint_rad, double should
     lastZ = z_ee;
     lastT = hand_joint_rad - (M_PI - shoulder_joint_rad - elbow_joint_rad) + (M_PI / 2);
   }
-  std::array<double, 5> result = {lastX,lastY,lastZ,EEMode,lastT};
+  std::array<double, 6> result = {lastX,lastY,lastZ,EEMode,lastT};
   return result;
 }
 
 std::vector<double> computeJointRadbyPos(double x, double y, double z, double t ) {
     std::array<double, 2> bases = cartesian_to_polar(x,y);
-    std::array<double, 2> radians = simpleLinkageIkRad(bases[0], z);
+    std::array<double, 2> radians = simpleLinkageIkRad(bases[0], z, t);
     
     std::vector<double> result = {bases[1], radians[0], radians[1]};
     return result;
@@ -302,7 +321,7 @@ void polarToCartesian(double r, double theta, double &x, double &y) {
   y = r * sin(theta);
 }
 
-std::array<double, 5> computePosbyJointRad(double base_joint_rad, double shoulder_joint_rad, double elbow_joint_rad, double wrist_joint_rad, double roll_joint_rad, double hand_joint_rad) {
+std::array<double, 6> computePosbyJointRad(double base_joint_rad, double shoulder_joint_rad, double elbow_joint_rad, double wrist_joint_rad, double roll_joint_rad, double hand_joint_rad) {
   double aOut, bOut,   cOut, dOut,   eOut, fOut,   gOut, hOut;
   double r_ee, z_ee;
 
@@ -319,11 +338,11 @@ std::array<double, 5> computePosbyJointRad(double base_joint_rad, double shoulde
   lastY = hOut;
   lastZ = z_ee;
   lastT = (elbow_joint_rad + shoulder_joint_rad + wrist_joint_rad) - M_PI/2;
-  std::array<double, 5> result = {lastX,lastY,lastZ,roll_joint_rad,lastT};
+  std::array<double, 6> result = {lastX,lastY,lastZ,roll_joint_rad,lastT};
   return result;
 }
 
-std::vector<double> computeJointRadbyPos(double x, double y, double z, double roll, double pitch ) {
+std::vector<double> computeJointRadbyPos(double x, double y, double z, double roll, double pitch, double hand) {
 
     std::array<double, 2> delta = rotatePoint((pitch - 3.1416));
     std::array<double, 2> beta = movePoint(x, y, delta[0]);

@@ -38,6 +38,15 @@ std::string get_roarm_model() {
     return std::string(env_val); 
 }
 
+std::string get_gripper_type() {
+    const char* env_val = std::getenv("GRIPPER_TYPE");
+    if (env_val == nullptr) {
+        std::cerr << "no GRIPPER_TYPE!" << std::endl;
+        return "";  
+    }
+    return std::string(env_val); 
+}
+
 std::vector<Pose> generateLinearTrajectory(const Pose& startPose, const std::vector<double>& endPoint, int numPoints) {
     std::vector<Pose> trajectory;
 

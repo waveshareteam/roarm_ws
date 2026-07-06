@@ -1,28 +1,53 @@
 <?xml version="1.0" ?>
 <robot name="roarm_m3" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-<xacro:macro name="add_depth_camera" params="add_depth_camera"></xacro:macro>
-<xacro:arg name="add_depth_camera" default="false"/>
-<xacro:property name="add_depth_camera" value="$(arg add_depth_camera)"/>
-
 <xacro:include filename="$(find roarm_description)/urdf/materials.xacro" />
 <xacro:include filename="$(find roarm_description)/urdf/gazebo/roarm_m3.trans" />
 <xacro:include filename="$(find roarm_description)/urdf/gazebo/roarm_m3.gazebo" />
 
+<xacro:macro name="add_depth_camera" params="add_depth_camera"></xacro:macro>
+<xacro:arg name="add_depth_camera" default="false"/>
+<xacro:property name="add_depth_camera" value="$(arg add_depth_camera)"/>
+
+<xacro:macro name="add_camera" params="add_camera"></xacro:macro>
+<xacro:arg name="add_camera" default="false"/>
+<xacro:property name="add_camera" value="$(arg add_camera)"/>
+
 <xacro:if value="${add_depth_camera}">
 <xacro:include filename="$(find roarm_description)/urdf/camera/depth_camera.xacro" />
 <xacro:include filename="$(find roarm_description)/urdf/camera/depth_camera.gazebo.xacro" />
-<xacro:oak use_gazebo="true">
+<!-- <xacro:oak use_gazebo="true">
   <parent link="link4" />
   <origin xyz="-0.066257 -0.0523 0" rpy="1.5708 0 -1.5708" />
-</xacro:oak>  
+  oak cam in hand
+</xacro:oak>   -->
+<xacro:oak use_gazebo="true">
+  <parent link="base_link" />
+  <origin xyz="0.06531 0 0.021953" rpy="0 0 0" />
+  <!-- usb cam out hand -->
+</xacro:oak> 
+</xacro:if>
+
+<xacro:if value="${add_camera}">
+<xacro:include filename="$(find roarm_description)/urdf/camera/camera.xacro" />
+<xacro:include filename="$(find roarm_description)/urdf/camera/camera.gazebo.xacro" />
+<xacro:cam use_gazebo="true">
+  <parent link="link4" />
+  <origin xyz="-0.046 -0.072938 0" rpy="1.5708 0 -1.3963" />
+  <!-- usb cam in hand -->
+</xacro:cam>  
+<!-- <xacro:cam use_gazebo="true">
+  <parent link="base_link" />
+  <origin xyz="0.06531 0 0.021953" rpy="0 0 0" />
+  usb cam out hand
+</xacro:cam>  -->
 </xacro:if>
 
 <link name="world"></link>
 
 <link name="base_link">
   <inertial>
-    <origin xyz="-0.0068 0 -0.03" rpy="0 0 0" />
+    <origin xyz="0.0032 0 0.0417" rpy="0 0 0" />
     <mass value="0.2562183" />
     <inertia ixx="0.00029211" ixy="0" ixz="0" iyy="0.00035719" iyz="0" izz="0.000349421" />
   </inertial>
@@ -170,14 +195,14 @@
 <link name="hand_tcp"></link>
 
 <joint name="world_to_base_link" type="fixed">
-  <origin xyz="0.0 0.0 0.0701" rpy="0 0 0"/>
+  <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
   <parent link="world"/>
   <child link="base_link"/>
   <axis xyz="0.0 0.0 1.0"/>
 </joint>
   
 <joint name="base_link_to_link1" type="revolute">
-  <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+  <origin xyz="0.0100000008759151 0.0 0.0716" rpy="0 0 0"/>
   <parent link="base_link"/>
   <child link="link1"/>
   <axis xyz="0.0 0.0 1.0"/>
@@ -206,7 +231,7 @@
   <child link="link3"/>
   <axis xyz="0.0 0.0 1.0"/>
   <limit
-    lower="-1"
+    lower="0"
     upper="2.95"
     effort="0"
     velocity="0" />  

@@ -1,9 +1,9 @@
 import os
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import PathJoinSubstitution
+from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch.actions import OpaqueFunction
@@ -53,6 +53,7 @@ def launch_setup(context, *args, **kwargs):
         ),
         launch_arguments={
             'rviz_config': 'roarm_moveit',
+            'use_rviz': LaunchConfiguration('use_rviz'),
         }.items(),
     )
 
@@ -93,5 +94,6 @@ def launch_setup(context, *args, **kwargs):
 
 def generate_launch_description():
     return LaunchDescription([
+        DeclareLaunchArgument('use_rviz', default_value='true', description='Whether to launch RViz2'),
         OpaqueFunction(function=launch_setup)
     ])

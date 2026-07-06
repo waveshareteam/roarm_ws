@@ -601,6 +601,7 @@ class PickPlaceCmdNode(Node):
         if not aligned:
             self.hand_node.add_point(home)
             self.hand_node.publish_trajectory()
+            time.sleep(1.5)
             return False
 
         ax, ay, az = self.get_current_position_mm()
@@ -772,6 +773,7 @@ class PickPlaceCmdNode(Node):
         if not aligned:
             self.hand_node.add_point(home)
             self.hand_node.publish_trajectory()
+            time.sleep(1.5)
             return False
 
         ax, ay, az = self.get_current_position_mm()

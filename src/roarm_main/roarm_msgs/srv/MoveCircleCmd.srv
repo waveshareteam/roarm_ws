@@ -5,6 +5,7 @@ float64 z0
 float64 x1    
 float64 y1    
 float64 z1    
+float64 gripper
 
 ---
 bool success   

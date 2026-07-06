@@ -1,6 +1,7 @@
 #include "roarm_moveit_cmd/roarm_server.hpp"
 
 std::string model = get_roarm_model();
+std::string gripper_type = get_gripper_type();
 
 class RobotPoseSubscription : public rclcpp::Node
 {
@@ -12,7 +13,7 @@ public:
             std::bind(&RobotPoseSubscription::joint_states_callback, this, std::placeholders::_1));
     }
 
-    std::array<double, 5> get_hand_pose() const { return pose; }
+    std::array<double, 6> get_hand_pose() const { return pose; }
 
 private:
     void joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
@@ -47,7 +48,7 @@ private:
     }
 
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr subscription_;
-    std::array<double, 5> pose{};
+    std::array<double, 6> pose{};
 };  
 
 void get_pose_cmd_service(const std::shared_ptr<roarm_msgs::srv::GetPoseCmd::Request> request,
@@ -55,7 +56,7 @@ void get_pose_cmd_service(const std::shared_ptr<roarm_msgs::srv::GetPoseCmd::Req
                     std::shared_ptr<RobotPoseSubscription> node)
 {
     auto logger = node->get_logger();
-    std::array<double, 5> pose = node->get_hand_pose();
+    std::array<double, 6> pose = node->get_hand_pose();
     response->x = pose[0]/1000.0;
     response->y = pose[1]/1000.0;
     response->z = pose[2]/1000.0;
@@ -63,10 +64,12 @@ void get_pose_cmd_service(const std::shared_ptr<roarm_msgs::srv::GetPoseCmd::Req
       response->roll = 0.0;
       response->pitch = 0.0;
       response->yaw = 0.0;
+      response->gripper = pose[4];
     } else if (model == "roarm_m3") {
       response->roll = pose[3];
       response->pitch = pose[4];
       response->yaw = 0.0;
+      response->gripper = pose[5];
     }    
 }
 
@@ -79,11 +82,15 @@ void move_joint_cmd_service(const std::shared_ptr<roarm_msgs::srv::MoveJointCmd:
 
   std::vector<double> target;
   if (model == "roarm_m2") {
-    target = roarm_m2::computeJointRadbyPos(1000*request->x,1000*request->y,1000*request->z,0.0);
+    if (gripper_type == "angular_direct") {
+      target = roarm_m2::computeJointRadbyPos(1000*request->x,1000*request->y,1000*request->z,0.0);
+    }else if (gripper_type == "angular_gear") {
+      target = roarm_m2::computeJointRadbyPos(1000*request->x,1000*request->y,1000*request->z,request->gripper);
+    }
     RCLCPP_INFO(logger, "BASE_point_RAD: %f, SHOULDER_point_RAD: %f, ELBOW_point_RAD: %f", target[0], target[1], target[2]);
     RCLCPP_INFO(logger, "x: %f, y: %f, z: %f", request->x, request->y, request->z);
   } else if (model == "roarm_m3") {
-    target = roarm_m3::computeJointRadbyPos(1000*request->x,1000*request->y,1000*request->z,request->roll, request->pitch);
+    target = roarm_m3::computeJointRadbyPos(1000*request->x,1000*request->y,1000*request->z,request->roll, request->pitch,request->gripper);
     RCLCPP_INFO(logger, "BASE_JOINT_RAD: %f, SHOULDER_JOINT_RAD: %f, ELBOW_JOINT_RAD: %f, WRIST_JOINT_RAD: %f, ROLL_JOINT_RAD: %f", target[0], target[1], target[2], target[3], target[4]);
     RCLCPP_INFO(logger, "x: %f, y: %f, z: %f, roll: %f, pitch: %f", request->x, request->y, request->z, request->roll, request->pitch);
   } 
@@ -113,7 +120,7 @@ void move_line_cmd_service(const std::shared_ptr<roarm_msgs::srv::MoveLineCmd::R
   std::vector<geometry_msgs::msg::Pose> waypoints;   
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
   
-  std::array<double, 5> start_pose = node->get_hand_pose();
+  std::array<double, 6> start_pose = node->get_hand_pose();
   RCLCPP_INFO(logger, "start_pose: x: %f, y: %f, z: %f", start_pose[0], start_pose[1], start_pose[2]); 
   RCLCPP_INFO(logger, "x: %f, y: %f, z: %f", request->x, request->y, request->z); 
   Pose startPose = {start_pose[0], start_pose[1], start_pose[2], start_pose[3], start_pose[4]}; 
@@ -122,7 +129,11 @@ void move_line_cmd_service(const std::shared_ptr<roarm_msgs::srv::MoveLineCmd::R
   std::vector<Pose> trajectory = generateLinearTrajectory(startPose, endPoint, numPoints);
   if (model == "roarm_m2") {
     for (const auto& pose : trajectory) {
-      target = roarm_m2::computeJointRadbyPos(pose.x,pose.y,pose.z,0.0);
+      if (gripper_type == "angular_direct") {
+        target = roarm_m2::computeJointRadbyPos(pose.x,pose.y,pose.z,0.0);
+      }else if (gripper_type == "angular_gear") {
+        target = roarm_m2::computeJointRadbyPos(pose.x,pose.y,pose.z,request->gripper);
+      }
       RCLCPP_INFO(logger, "BASE_point_RAD: %f, SHOULDER_point_RAD: %f, ELBOW_point_RAD: %f", target[0], target[1], target[2]);
       move_group.setJointValueTarget(target);
       bool roarm_m2_success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
@@ -139,7 +150,7 @@ void move_line_cmd_service(const std::shared_ptr<roarm_msgs::srv::MoveLineCmd::R
     }
    } else if (model == "roarm_m3") {
     for (const auto& pose : trajectory) {
-      target = roarm_m3::computeJointRadbyPos(pose.x,pose.y,pose.z,pose.roll, pose.pitch);
+      target = roarm_m3::computeJointRadbyPos(pose.x,pose.y,pose.z,pose.roll, pose.pitch,request->gripper);
       RCLCPP_INFO(logger, "BASE_JOINT_RAD: %f, SHOULDER_JOINT_RAD: %f, ELBOW_JOINT_RAD: %f, WRIST_JOINT_RAD: %f, ROLL_JOINT_RAD: %f", target[0], target[1], target[2], target[3], target[4]);
       move_group.setJointValueTarget(target);
       bool roarm_m3_success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
@@ -168,7 +179,7 @@ void move_circle_cmd_service(const std::shared_ptr<roarm_msgs::srv::MoveCircleCm
   std::vector<geometry_msgs::msg::Pose> waypoints;   
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
   
-  std::array<double, 5> start_pose = node->get_hand_pose();
+  std::array<double, 6> start_pose = node->get_hand_pose();
   RCLCPP_INFO(logger, "start_pose: x: %f, y: %f, z: %f", start_pose[0], start_pose[1], start_pose[2]); 
   Pose startPose = {start_pose[0], start_pose[1], start_pose[2], start_pose[3], start_pose[4]}; 
   std::vector<double> viaPoint = {1000*(request->x0), 1000*(request->y0), 1000*(request->z0)};
@@ -177,7 +188,11 @@ void move_circle_cmd_service(const std::shared_ptr<roarm_msgs::srv::MoveCircleCm
   std::vector<Pose> trajectory = generateCircularTrajectory(startPose, viaPoint, endPoint, numPoints);
   if (model == "roarm_m2") {
     for (const auto& pose : trajectory) {
-      target = roarm_m2::computeJointRadbyPos(pose.x,pose.y,pose.z,0.0);
+      if (gripper_type == "angular_direct") {
+        target = roarm_m2::computeJointRadbyPos(pose.x,pose.y,pose.z,0.0);
+      }else if (gripper_type == "angular_gear") {
+        target = roarm_m2::computeJointRadbyPos(pose.x,pose.y,pose.z,request->gripper);
+      }
       RCLCPP_INFO(logger, "BASE_point_RAD: %f, SHOULDER_point_RAD: %f, ELBOW_point_RAD: %f", target[0], target[1], target[2]);
       move_group.setJointValueTarget(target);
       bool roarm_m2_success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
@@ -194,7 +209,7 @@ void move_circle_cmd_service(const std::shared_ptr<roarm_msgs::srv::MoveCircleCm
     }
    } else if (model == "roarm_m3") {
     for (const auto& pose : trajectory) {
-      target = roarm_m3::computeJointRadbyPos(pose.x,pose.y,pose.z,pose.roll, pose.pitch);
+      target = roarm_m3::computeJointRadbyPos(pose.x,pose.y,pose.z,pose.roll, pose.pitch,request->gripper);
       RCLCPP_INFO(logger, "BASE_JOINT_RAD: %f, SHOULDER_JOINT_RAD: %f, ELBOW_JOINT_RAD: %f, WRIST_JOINT_RAD: %f, ROLL_JOINT_RAD: %f", target[0], target[1], target[2], target[3], target[4]);
       move_group.setJointValueTarget(target);
       bool roarm_m3_success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);

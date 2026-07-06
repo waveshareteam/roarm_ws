@@ -1,8 +1,13 @@
 <?xml version="1.0" ?>
 <robot name="roarm_m2" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+<xacro:macro name="add_depth_camera" params="add_depth_camera"></xacro:macro>
 <xacro:arg name="add_depth_camera" default="false"/>
 <xacro:property name="add_depth_camera" value="$(arg add_depth_camera)"/>
+
+<xacro:macro name="add_camera" params="add_camera"></xacro:macro>
+<xacro:arg name="add_camera" default="false"/>
+<xacro:property name="add_camera" value="$(arg add_camera)"/>
 
 <xacro:arg name="gripper_type" default="angular_gear"/>
 <xacro:property name="gripper_type" value="$(arg gripper_type)"/>
@@ -11,14 +16,43 @@
 <xacro:include filename="$(find roarm_description)/urdf/gazebo/roarm_m2.trans" />
 <xacro:include filename="$(find roarm_description)/urdf/gazebo/roarm_m2.gazebo" />
 
-<!-- <xacro:if value="${add_depth_camera}">
+<xacro:if value="${add_depth_camera}">
 <xacro:include filename="$(find roarm_description)/urdf/camera/depth_camera.xacro" />
 <xacro:include filename="$(find roarm_description)/urdf/camera/depth_camera.gazebo.xacro" />
+<!-- <xacro:oak use_gazebo="true">
+  <parent link="link4" />
+  <origin xyz="-0.066257 -0.0523 0" rpy="1.5708 0 -1.5708" />
+  oak cam in hand
+</xacro:oak>   -->
 <xacro:oak use_gazebo="true">
-  <parent link="link3" />
-  <origin xyz="-0.06 -0.2 0" rpy="1.5708 0 -1.5708" />
-</xacro:oak>  
-</xacro:if> -->
+  <parent link="base_link" />
+  <origin xyz="0.06531 0 0.021953" rpy="0 0 0" />
+  <!-- usb cam out hand -->
+</xacro:oak> 
+</xacro:if>
+
+<xacro:if value="${add_camera}">
+<xacro:include filename="$(find roarm_description)/urdf/camera/camera.xacro" />
+<xacro:include filename="$(find roarm_description)/urdf/camera/camera.gazebo.xacro" />
+<xacro:cam use_gazebo="true">
+
+  <xacro:if value="${gripper_type == 'angular_direct'}">
+    <parent link="link3" />
+    <origin xyz="-0.062588 -0.181612 0" rpy="1.5708 0 -1.3963" />
+  </xacro:if>
+
+  <xacro:if value="${gripper_type == 'angular_gear'}">
+    <parent link="link3" />
+    <!-- <origin xyz="-0.046 -0.183536 0" rpy="1.5708 0 -1.5708" /> -->
+    <origin xyz="-0.020898 -0.239246 0" rpy="1.5708 0 -1.5708" />
+    <!-- usb cam in hand -->
+  </xacro:if>
+
+    <!-- <parent link="base_link" />
+    <origin xyz="0.06531 0 0.021953" rpy="0 0 0" /> -->
+    <!-- usb cam out hand -->
+  </xacro:cam>  
+</xacro:if>
 
 <link name="world"></link>
 
@@ -136,7 +170,7 @@
   <parent link="link2" />
   <child  link="link3" />
   <axis xyz="0 0 1" />
-  <limit lower="-1" upper="2.95" effort="0" velocity="0" />
+  <limit lower="0" upper="2.95" effort="0" velocity="0" />
 </joint>
 
 <xacro:if value="${gripper_type == 'angular_direct'}">

@@ -1,0 +1,44 @@
+site_name: Roarm_ws Documentation
+site_description: ROS2 Humble colcon workspace (roarm_ws) + MoveIt2 for RoArm (roarm_m2 / roarm_m3; M2-GA = roarm_m2 + angular_gear)
+site_url: https://roarm-ws.readthedocs.io/
+
+repo_name: roarm_ws
+repo_url: https://github.com/waveshareteam/roarm_ws
+edit_uri: edit/ros2-humble-develop-251125/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: readthedocs
+  highlightjs: true
+
+nav:
+  - Roarm_ws Documentation: index.md
+  - Getting Started:
+      - ROS2 Basics: ros2_basics.md
+      - RoArm Basics: roarm_basics.md
+      - Installation: installation.md
+  - Tutorials:
+      - Robot Description: description.md
+      - Hardware Driver: driver_control.md
+      - MoveIt2: moveit2.md
+      - Keyboard & Gamepad Control: keyboard_control.md
+      - Command Control: command_control.md
+      - MTC Demo: mtc_demo.md
+      - Vision: vision.md
+      - Gazebo: gazebo.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - attr_list
+  - md_in_html
+  - pymdownx.superfences
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/copy-button.js
+  - javascripts/image-lightbox.js

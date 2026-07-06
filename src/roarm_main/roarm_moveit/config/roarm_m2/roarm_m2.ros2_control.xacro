@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:macro name="roarm_m2_ros2_control" params="use_gazebo GZ_VERSION initial_positions_file">
+    <xacro:macro name="roarm_m2_ros2_control" params="use_gazebo GZ_VERSION gripper_type initial_positions_file">
         <xacro:property name="initial_positions" value="${load_yaml(initial_positions_file)['initial_positions']}"/>
 
         <ros2_control name="RoarmHardware" type="system">
@@ -47,6 +47,7 @@
                 </state_interface>
                 <state_interface name="velocity"/>
             </joint>
+            <xacro:if value="${gripper_type == 'angular_gear'}">
             <joint name="gripper_left_joint1">
               <param name="mimic">gripper_joint</param>
               <param name="multiplier">1</param>
@@ -100,7 +101,8 @@
                 <param name="initial_value">${initial_positions['gripper_joint']}</param>
               </state_interface>
               <state_interface name="velocity"/>
-            </joint>                                                            
+            </joint>    
+            </xacro:if>                                                                         
         </ros2_control>
     </xacro:macro>
 </robot>

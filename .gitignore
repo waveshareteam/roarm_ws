@@ -3,3 +3,5 @@ build/
 install/
 log/
 .vscode/
+docs/_build/
+site/
