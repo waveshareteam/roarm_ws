@@ -73,12 +73,15 @@ std::array<double, 2> simpleLinkageIkRad(double aIn, double bIn, double gripper)
     double psi, alpha, omega, beta, L2C, LC, lambda, delta, LA, LB;
     LA = l2;
 
-    if(gripper != 0){
-      l3A = ARM_L3_LENGTH_MM_A_1 + ARM_GRIPPER_L1 + ARM_GRIPPER_L2*cos(gripper) + ARM_GRIPPER_L3;
-       l3 = sqrt(l3A * l3A + l3B *l3B);
+    double effectiveL3A;
+    if (gripper != 0) {
+        effectiveL3A = ARM_L3_LENGTH_MM_A_1 + ARM_GRIPPER_L1
+                     + ARM_GRIPPER_L2 * cos(gripper) + ARM_GRIPPER_L3;
+    } else {
+        effectiveL3A = ARM_L3_LENGTH_MM_A_0; 
     }
+    LB = sqrt(effectiveL3A * effectiveL3A + l3B * l3B);
 
-    LB = l3;
 
     if (fabs(bIn) < 1e-6) {
         psi = acos((LA * LA + aIn * aIn - LB * LB) / (2 * LA * aIn)) + t2rad;
@@ -127,13 +130,17 @@ std::array<double, 6>  computePosbyJointRad(double base_joint_rad, double should
     // compute the end position of the first linkage(the linkage between baseJoint and shoulderJoint).
     double aOut, bOut, cOut, dOut, eOut, fOut;
 
-    if(hand_joint_rad != 0){
-      l3A = ARM_L3_LENGTH_MM_A_1 + ARM_GRIPPER_L1 + ARM_GRIPPER_L2*cos(hand_joint_rad) + ARM_GRIPPER_L3;
-       l3 = sqrt(l3A * l3A + l3B *l3B);
+    double effectiveL3A;
+    if (hand_joint_rad != 0) {
+        effectiveL3A = ARM_L3_LENGTH_MM_A_1 + ARM_GRIPPER_L1
+                    + ARM_GRIPPER_L2 * cos(hand_joint_rad) + ARM_GRIPPER_L3;
+    } else {
+        effectiveL3A = ARM_L3_LENGTH_MM_A_0;
     }
+    double effectiveL3 = sqrt(effectiveL3A * effectiveL3A + l3B * l3B);
 
     polarToCartesian(l2, ((M_PI / 2) - (shoulder_joint_rad + t2rad)), aOut, bOut);
-    polarToCartesian(l3, ((M_PI / 2) - (elbow_joint_rad + shoulder_joint_rad)), cOut, dOut);
+    polarToCartesian(effectiveL3, ((M_PI / 2) - (elbow_joint_rad + shoulder_joint_rad)), cOut, dOut);
 
     r_ee = aOut + cOut;
     z_ee = bOut + dOut;
@@ -165,7 +172,7 @@ std::array<double, 6>  computePosbyJointRad(double base_joint_rad, double should
     lastZ = z_ee;
     lastT = hand_joint_rad - (M_PI - shoulder_joint_rad - elbow_joint_rad) + (M_PI / 2);
   }
-  std::array<double, 6> result = {lastX,lastY,lastZ,EEMode,lastT};
+  std::array<double, 6> result = {lastX,lastY,lastZ,lastT,0.0,0.0};
   return result;
 }
 
@@ -338,7 +345,7 @@ std::array<double, 6> computePosbyJointRad(double base_joint_rad, double shoulde
   lastY = hOut;
   lastZ = z_ee;
   lastT = (elbow_joint_rad + shoulder_joint_rad + wrist_joint_rad) - M_PI/2;
-  std::array<double, 6> result = {lastX,lastY,lastZ,roll_joint_rad,lastT};
+  std::array<double, 6> result = {lastX,lastY,lastZ,roll_joint_rad,lastT,hand_joint_rad};
   return result;
 }
 
