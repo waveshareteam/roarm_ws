@@ -175,10 +175,10 @@ The driver must be running. `-1` publishes once and exits.
 
 ## Related Tutorials
 
-| Goal | Next page |
-|------|-----------|
-| Understand links, joints, TF | [Robot Description](description.md) |
-| Drag end-effector with MoveIt | [MoveIt2](moveit2.md) |
-| Keyboard teleoperation | [Keyboard Control](keyboard_control.md) |
-| Motion via ROS services | [Command Control](command_control.md) |
-| Camera pick & place | [Vision](vision.md) |
+| Chapter | What it adds |
+|---------|----------------|
+| [Robot Description](description.md) | Links, joints, TF diagrams |
+| [MoveIt2](moveit2.md) | Drag end-effector with MoveIt |
+| [Keyboard & Gamepad Control](keyboard_control.md) | Real-time jog via MoveIt Servo |
+| [Command Control](command_control.md) | Motion via ROS services |
+| [Vision](vision.md) | Camera pick & place |

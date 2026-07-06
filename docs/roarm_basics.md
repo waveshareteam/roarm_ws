@@ -157,15 +157,14 @@ Service examples: [Command Control](command_control.md).
 
 ---
 
-## Related
+## Related Tutorials
 
-| Goal | Go to |
-|------|-------|
-| TF tree diagrams & joint tables | [Robot Description](description.md#tf-tree) |
-| Drag marker in RViz | [MoveIt2](moveit2.md) |
-| Keyboard / gamepad Cartesian jog | [Keyboard & Gamepad Control](keyboard_control.md) |
-| Services & poses | [Command Control](command_control.md) |
-| Camera pick-place & frames | [Vision](vision.md) |
-| Debug TF with ROS tools | [ROS2 Basics — TF2](ros2_basics.md#tf2) |
-
-**Next:** [Installation](installation.md) — build `roarm_ws` and set `ROARM_MODEL`, `GRIPPER_TYPE` (and `GZ_VERSION` if you use Gazebo).
+| Chapter | What it adds |
+|---------|----------------|
+| [Installation](installation.md) | Build **`roarm_ws`** and set `ROARM_MODEL`, `GRIPPER_TYPE` (and `GZ_VERSION` if you use Gazebo) |
+| [Robot Description](description.md#tf-tree) | TF tree diagrams & joint tables |
+| [MoveIt2](moveit2.md) | Drag marker in RViz |
+| [Keyboard & Gamepad Control](keyboard_control.md) | Keyboard / gamepad Cartesian jog |
+| [Command Control](command_control.md) | Services & poses |
+| [Vision](vision.md) | Camera pick-place & frames |
+| [ROS2 Basics — TF2](ros2_basics.md#tf2) | Debug TF with ROS tools |

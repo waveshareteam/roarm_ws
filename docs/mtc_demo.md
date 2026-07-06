@@ -207,10 +207,11 @@ Spawns a **virtual** table and cylinder in the MoveIt planning scene (collision-
 
 ---
 
-## Related
+## Related Tutorials
 
-| Chapter | Link |
-|---------|------|
-| Drag-and-plan MoveIt | [MoveIt2](moveit2.md) |
-| Service-based motion | [Command Control](command_control.md) |
-| Camera + real pick-place | [Vision](vision.md) |
+| Chapter | What it adds |
+|---------|----------------|
+| [MoveIt2](moveit2.md) | Drag-and-plan MoveIt |
+| [Command Control](command_control.md) | Service-based motion |
+| [Vision](vision.md) | Camera + real pick-place |
+| [Keyboard & Gamepad Control](keyboard_control.md) | Real-time jog (alternative to Cmd) |

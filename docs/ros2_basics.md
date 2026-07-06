@@ -279,17 +279,17 @@ Common fixes:
 
 ---
 
-## Suggested learning path
+## Related Tutorials
 
-| Step | Doc page | You learn |
-|------|----------|-----------|
-| 1 | This page | ROS2 words, TF tools |
-| 2 | [RoArm Basics](roarm_basics.md) | Frames, `hand_tcp`, real TCP |
-| 3 | [Installation](installation.md) | Install & build |
-| 4 | [Robot Description](description.md) | Model, joints, TF diagrams |
-| 5 | [Hardware Driver](driver_control.md) | USB + driver node |
-| 6 | [MoveIt2](moveit2.md) | Motion planning |
-| 7+ | Other tutorials | Servo, services, vision, sim |
+| Chapter | What it adds |
+|---------|----------------|
+| [ROS2 Basics](ros2_basics.md) | ROS2 words, TF tools (this page) |
+| [RoArm Basics](roarm_basics.md) | Frames, `hand_tcp`, real TCP |
+| [Installation](installation.md) | Install & build |
+| [Robot Description](description.md) | Model, joints, TF diagrams |
+| [Hardware Driver](driver_control.md) | USB + driver node |
+| [MoveIt2](moveit2.md) | Motion planning |
+| Further tutorials | Servo, services, vision, sim — see [index](index.md#suggested-reading-order) |
 
 ---
 

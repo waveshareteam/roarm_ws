@@ -217,3 +217,15 @@ source ~/.bashrc
 No need to re-run full `build_first.sh` for **`ROARM_MODEL`** or **`GRIPPER_TYPE`** — edit `~/.bashrc` as above.
 
 **Simulation (`GZ_VERSION`):** adding Gazebo or switching backend (Classic ↔ Harmonic) requires installing the matching **apt dependencies**. Re-run `build_first.sh` and select the Gazebo version you need; the script installs packages and can append `GZ_VERSION` to `~/.bashrc`. Setting `GZ_VERSION` alone, without the corresponding Gazebo stack installed, is not enough — see [Gazebo](gazebo.md).
+
+---
+
+## Related Tutorials
+
+| Chapter | What it adds |
+|---------|----------------|
+| [ROS2 Basics](ros2_basics.md) | Terms used during install (`colcon`, sourcing, packages) |
+| [Robot Description](description.md) | URDF, joints, RViz sliders after build |
+| [Hardware Driver](driver_control.md) | USB serial and `roarm_driver` on the real arm |
+| [MoveIt2](moveit2.md) | Drag-and-plan once the arm is connected |
+| [Gazebo](gazebo.md) | Simulation (only if you installed Gazebo in `build_first.sh`) |

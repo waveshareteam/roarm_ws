@@ -225,14 +225,14 @@ Target frame defaults to **`object_1`**. Pick with `target: 1`.
 
 ---
 
-## Related
+## Related Tutorials
 
-| Chapter | Link |
-|---------|------|
-| Serial driver | [Hardware Driver](driver_control.md) |
-| Pose services (no camera) | [Command Control](command_control.md) |
-| MTC pick-place with vision binaries | [MTC Demo](mtc_demo.md) |
-| Simulated camera (Gazebo) | [Gazebo](gazebo.md) |
-| Real TCP vs `hand_tcp` | [RoArm Basics](roarm_basics.md) |
+| Chapter | What it adds |
+|---------|----------------|
+| [Hardware Driver](driver_control.md) | Serial driver |
+| [Command Control](command_control.md) | Pose services (no camera) |
+| [MTC Demo](mtc_demo.md) | MTC pick-place with vision binaries |
+| [Gazebo](gazebo.md) | Simulated camera |
+| [RoArm Basics](roarm_basics.md) | Real TCP vs `hand_tcp` |
 
 When switching tutorials: **`Ctrl+C`** vision and Cmd launches; keep or restart **`roarm_driver`** as the next chapter requires.

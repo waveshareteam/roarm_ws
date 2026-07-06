@@ -158,14 +158,14 @@ On Harmonic, **`ros_gz_bridge`** also forwards `/joint_states` and `/clock` betw
 
 ---
 
-## Related
+## Related Tutorials
 
-| Chapter | Link |
-|---------|------|
-| Build, `GZ_VERSION`, model env vars | [Installation](installation.md) |
-| Drag-and-plan on hardware | [MoveIt2](moveit2.md) |
-| URDF, meshes, optional cameras | [Robot Description](description.md) |
-| Real serial bridge | [Hardware Driver](driver_control.md) |
-| MTC in simulation | Not wired in **`roarm_ws`** — use hardware [MTC Demo](mtc_demo.md) or extend `bringup` with `rviz_config:=roarm_moveit_mtc_demo` for RViz only |
+| Chapter | What it adds |
+|---------|----------------|
+| [Installation](installation.md) | Build, `GZ_VERSION`, model env vars |
+| [MoveIt2](moveit2.md) | Drag-and-plan on hardware |
+| [Robot Description](description.md) | URDF, meshes, optional cameras |
+| [Hardware Driver](driver_control.md) | Real serial bridge |
+| [MTC Demo](mtc_demo.md) | MTC on hardware (not wired in sim by default) |
 
 When switching from simulation to the real arm: **`Ctrl+C`** Gazebo, then start **`roarm_driver`** and the tutorial launch for [MoveIt2](moveit2.md), [Command Control](command_control.md), or others.

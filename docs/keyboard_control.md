@@ -300,3 +300,16 @@ Press **`t`** or **`j`** once to select the mode before jogging. Unlike the game
 | `display.launch.py` or MoveIt still running | Stop other launches so only Servo publishes `/joint_states` — see [Prerequisites](#prerequisites) |
 | Keyboard has no effect | Focus the **T2** terminal running `keyboardcontrol`; confirm **T1** `servo_control.launch.py` is still running |
 | Port already in use / stale RViz | `Ctrl+C` all old launches, then restart **T0** driver and **T1** Servo |
+
+---
+
+## Related Tutorials
+
+| Chapter | What it adds |
+|---------|----------------|
+| [MoveIt2](moveit2.md) | Plan to a pose in RViz (vs real-time Servo jog) |
+| [Command Control](command_control.md) | Pose goals via ROS services and scripts |
+| [Hardware Driver](driver_control.md) | `roarm_driver` on Terminal 0 |
+| [MTC Demo](mtc_demo.md) | Multi-stage pick/place tasks in MoveIt |
+
+When switching tutorials, stop the current launch with **`Ctrl+C`**, but usually **keep `roarm_driver` running** unless the next chapter says otherwise.

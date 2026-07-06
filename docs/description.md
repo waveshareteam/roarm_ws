@@ -341,9 +341,9 @@ For frame names, **`hand_tcp`** vs **real TCP**, and which tutorials use which â
 
 ## Related Tutorials
 
-| Goal | Go to |
-|------|-------|
-| Frames & TCP | [RoArm Basics](roarm_basics.md) |
-| Control real arm over USB | [Hardware Driver](driver_control.md) |
-| Drag end-effector with MoveIt | [MoveIt2](moveit2.md) |
-| Simulation | [Gazebo](gazebo.md) |
+| Chapter | What it adds |
+|---------|----------------|
+| [RoArm Basics](roarm_basics.md) | Frames & TCP |
+| [Hardware Driver](driver_control.md) | Control real arm over USB |
+| [MoveIt2](moveit2.md) | Drag end-effector with MoveIt |
+| [Gazebo](gazebo.md) | Simulation |
