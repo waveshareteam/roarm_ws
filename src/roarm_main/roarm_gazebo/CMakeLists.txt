@@ -20,7 +20,6 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(control_toolbox REQUIRED)
 find_package(controller_manager REQUIRED)
-find_package(gazebo_ros REQUIRED)
 
 # uncomment the following section in order to fill in
 # further dependencies manually.

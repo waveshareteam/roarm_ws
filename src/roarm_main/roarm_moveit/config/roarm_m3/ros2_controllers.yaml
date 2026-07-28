@@ -22,11 +22,21 @@ hand_controller:
       - link2_to_link3
       - link3_to_link4
       - link4_to_link5
+
+    interface_name: position
+    
     command_interfaces:
       - position
     state_interfaces:
       - position
       - velocity
+
+    allow_partial_joints_goal: true      
 gripper_controller:
   ros__parameters:
     joint: link5_to_gripper_link
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity

@@ -209,8 +209,8 @@
   <limit
     lower="-3.1416"
     upper="3.1416"
-    effort="0"
-    velocity="0" />  
+    effort="20" 
+    velocity="3.14" />
 </joint>
 
 <joint name="link1_to_link2" type="revolute">
@@ -221,8 +221,8 @@
   <limit
     lower="-1.5708"
     upper="1.5708"
-    effort="0"
-    velocity="0" />
+    effort="20" 
+    velocity="3.14" />
 </joint>
 
 <joint name="link2_to_link3" type="revolute">
@@ -233,8 +233,8 @@
   <limit
     lower="0"
     upper="2.95"
-    effort="0"
-    velocity="0" />  
+    effort="20" 
+    velocity="3.14" /> 
 </joint>
 
 <joint name="link3_to_link4" type="revolute">
@@ -245,8 +245,8 @@
   <limit
     lower="-1.5708"
     upper="1.5708"
-    effort="0"
-    velocity="0" />
+    effort="20" 
+    velocity="3.14" />
 </joint>
 
 <joint name="link4_to_link5" type="revolute">
@@ -257,8 +257,8 @@
   <limit
     lower="-3.1416"
     upper="3.1416"
-    effort="0"
-    velocity="0" />  
+    effort="20" 
+    velocity="3.14" />
 </joint>
 
 <joint name="link5_to_gripper_link" type="revolute">
@@ -269,8 +269,8 @@
   <limit
     lower="0"
     upper="1.5"
-    effort="0"
-    velocity="0" />
+    effort="20" 
+    velocity="3.14" />
 </joint>
 
 <joint name="link5_to_hand_tcp" type="fixed">
