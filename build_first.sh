@@ -24,7 +24,7 @@ remove_installed_pkgs () {
         echo "🧹 Removing packages matching /$pattern/:"
         echo "$pkgs"
         # shellcheck disable=SC2086
-        apt-get remove -y --purge $pkgs || true
+        sudo apt-get remove -y --purge $pkgs || true
     else
         echo "✔ No packages matching /$pattern/"
     fi
@@ -50,7 +50,7 @@ purge_gazebo_fortress_ros_gz () {
     remove_installed_pkgs '^libignition-gui6'
     remove_installed_pkgs '^libignition-rendering6'
     remove_installed_pkgs '^libignition-sensors6'
-    apt-get remove -y --purge ignition-tools ignition-transport11-cli || true
+    sudo apt-get remove -y --purge ignition-tools ignition-transport11-cli || true
 }
 
 purge_gazebo_classic_stack () {
@@ -61,9 +61,9 @@ purge_gazebo_classic_stack () {
 }
 
 ensure_universe () {
-    apt-get install -y software-properties-common
-    add-apt-repository -y universe || true
-    apt-get update
+    sudo apt-get install -y software-properties-common
+    sudo add-apt-repository -y universe || true
+    sudo apt-get update
 }
 
 reload_bashrc () {
@@ -85,8 +85,8 @@ echo
 
 # ---------- Basic system deps ----------
 echo "[1/7] Installing basic dependencies..."
-apt-get update
-apt-get install -y \
+sudo apt-get update
+sudo apt-get install -y \
   net-tools \
   python3-pip \
   python3-colcon-argcomplete \
@@ -112,7 +112,7 @@ fi
 echo
 echo "[2/7] Installing ROS 2 packages..."
 # 用 desktop，避免 desktop-full 乱拉 Gazebo 依赖
-apt-get install -y \
+sudo apt-get install -y \
     ros-dev-tools \
     ros-humble-desktop \
     ros-humble-joint-state-publisher \
@@ -132,8 +132,15 @@ apt-get install -y \
     ros-humble-depthai-filters \
     ros-humble-depthai-ros || true
 
+sudo -E apt install -y \
+  ros-humble-ros2-controllers \
+  ros-humble-gripper-controllers \
+  ros-humble-joint-trajectory-controller \
+  ros-humble-joint-state-broadcaster \
+  ros-humble-control-toolbox
+
 # depthai dbgsym 可选，失败不阻断
-apt-get install -y \
+sudo apt-get install -y \
     ros-humble-depthai-bridge-dbgsym \
     ros-humble-depthai-ros-msgs-dbgsym \
     ros-humble-depthai-ros-driver-dbgsym \
@@ -169,7 +176,7 @@ case "$GAZEBO_CHOICE" in
     echo "✔ Installing Gazebo Classic (gazebo11)..."
 
     # 取消可能阻止 Classic 的 apt pin（例如 ugv 脚本留下的）
-    rm -f "$APT_PREFS_BLOCK_CLASSIC"
+    sudo rm -f "$APT_PREFS_BLOCK_CLASSIC"
 
     # Classic 在 universe
     ensure_universe
@@ -177,9 +184,9 @@ case "$GAZEBO_CHOICE" in
     # 卸干净 Harmonic + Fortress
     purge_gazebo_harmonic_stack
     purge_gazebo_fortress_ros_gz
-    apt-get autoremove -y || true
+    sudo apt-get autoremove -y || true
 
-    apt-get install -y \
+    sudo apt-get install -y \
       gazebo \
       gazebo-common \
       gazebo-plugin-base \
@@ -198,7 +205,8 @@ case "$GAZEBO_CHOICE" in
     echo "   Per https://gazebosim.org/docs/harmonic/ros_installation/"
 
     # Harmonic 时阻止 Classic 被其它包拉回来（可选）
-    cat > "$APT_PREFS_BLOCK_CLASSIC" << 'EOF'
+    #cat > "$APT_PREFS_BLOCK_CLASSIC" << 'EOF'
+    sudo tee "$APT_PREFS_BLOCK_CLASSIC" > /dev/null << 'EOF'
 Package: gazebo
 Pin: release *
 Pin-Priority: -1
@@ -216,23 +224,23 @@ Pin: release *
 Pin-Priority: -1
 EOF
 
-    curl -sSL https://packages.osrfoundation.org/gazebo.gpg \
+    sudo curl -sSL https://packages.osrfoundation.org/gazebo.gpg \
       --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
 
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] \
 https://packages.osrfoundation.org/gazebo/ubuntu-stable \
 $(lsb_release -cs) main" \
-      | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
+      | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
 
-    apt-get update
+    sudo apt-get update
 
     # 官方：与 ros-humble-ros-gz*（Fortress）冲突；同时卸 Classic
     purge_gazebo_classic_stack
     purge_gazebo_fortress_ros_gz
-    apt-get autoremove -y || true
+    sudo apt-get autoremove -y || true
 
     # 正确栈：不要装 ros-humble-ros-gz
-    apt-get install -y \
+    sudo apt-get install -y \
       gz-harmonic \
       ros-humble-ros-gzharmonic \
       ros-humble-gz-ros2-control
