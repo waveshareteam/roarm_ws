@@ -356,7 +356,7 @@ class PickPlaceCmdNode(Node):
         self.gripper_node = gripper_node
         self.targetPose_node = targetPose_node
 
-        self.declare_parameter('base_frame', 'ugv_roarm_base_link')
+        self.declare_parameter('base_frame', 'base_link')
         self.declare_parameter('cam_frame', 'camera_link')
         self.base_frame = self.get_parameter('base_frame').value
         self.cam_frame = self.get_parameter('cam_frame').value

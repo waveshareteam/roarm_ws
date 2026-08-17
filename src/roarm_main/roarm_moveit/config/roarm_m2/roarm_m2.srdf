@@ -107,4 +107,29 @@
     <disable_collisions link1="link1" link2="link2" reason="Adjacent"/>
     <disable_collisions link1="link1" link2="link3" reason="Never"/>
     <disable_collisions link1="link2" link2="link3" reason="Adjacent"/>
+    <!-- Hand camera (add_camera:=true): sim uses cam_base_hand; hardware uses camera_link -->
+    <disable_collisions link1="cam_base_hand" link2="base_link" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="link1" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="link2" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="link3" reason="Adjacent"/>
+    <disable_collisions link1="cam_base_hand" link2="gripper_base" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="gripper_link" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="gripper_left1" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="gripper_left2" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="gripper_left3" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="gripper_right1" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="gripper_right2" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="gripper_right3" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="base_link" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="link1" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="link2" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="link3" reason="Adjacent"/>
+    <disable_collisions link1="camera_link" link2="gripper_base" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="gripper_link" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="gripper_left1" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="gripper_left2" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="gripper_left3" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="gripper_right1" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="gripper_right2" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="gripper_right3" reason="Never"/>
 </robot>

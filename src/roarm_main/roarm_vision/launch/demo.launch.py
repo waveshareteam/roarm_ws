@@ -13,7 +13,7 @@ def generate_launch_description():
     package_shared_path = get_package_share_directory(package)
 
     base_frame_arg = DeclareLaunchArgument(
-        'base_frame', default_value='ugv_roarm_base_link', 
+        'base_frame', default_value='base_link', 
         description='Choose which base_frame'
     )
 

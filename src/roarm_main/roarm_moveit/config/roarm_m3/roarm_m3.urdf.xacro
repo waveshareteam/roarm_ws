@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="roarm_m3">
 
+<!-- Single entry-point declarations for standalone RoArm M3. -->
 <xacro:macro name="use_gazebo" params="use_gazebo"></xacro:macro>
 <xacro:arg name="use_gazebo" default="false"/>
 <xacro:property name="use_gazebo" value="$(arg use_gazebo)"/>
@@ -9,11 +10,15 @@
 <xacro:arg name="GZ_VERSION" default="classic"/>
 <xacro:property name="GZ_VERSION" value="$(arg GZ_VERSION)"/>
 
+<xacro:macro name="add_camera" params="add_camera"></xacro:macro>
+<xacro:arg name="add_camera" default="false"/>
+<xacro:property name="add_camera" value="$(arg add_camera)"/>
+
+<xacro:macro name="add_depth_camera" params="add_depth_camera"></xacro:macro>
 <xacro:arg name="add_depth_camera" default="false"/>
 <xacro:property name="add_depth_camera" value="$(arg add_depth_camera)"/>
 
 <xacro:include filename="$(find roarm_description)/urdf/bases/roarm_m3.xacro" />
-<xacro:add_depth_camera add_depth_camera="$(arg add_depth_camera)"/>
 
 <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
 <xacro:include filename="roarm_m3.ros2_control.xacro" />
@@ -24,11 +29,14 @@
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
         <parameters>$(find roarm_moveit)/config/roarm_m3/ros2_controllers.yaml</parameters>
     </plugin>
-    </xacro:if>    
+    </xacro:if>
     <xacro:if value="${GZ_VERSION == 'harmonic'}">
     <plugin name="gz_ros2_control::GazeboSimROS2ControlPlugin" filename="libgz_ros2_control-system.so">
         <parameters>$(find roarm_moveit)/config/roarm_m3/ros2_controllers.yaml</parameters>
     </plugin>
-    </xacro:if>  
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+        <render_engine>ogre2</render_engine>
+    </plugin>
+    </xacro:if>
 </gazebo>
 </robot>

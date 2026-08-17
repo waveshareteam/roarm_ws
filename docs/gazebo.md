@@ -80,6 +80,13 @@ ros2 launch roarm_gazebo bringup_gazebo.launch.py use_rviz:=true \
   rviz_config:=roarm_description add_camera:=true
 ```
 
+Depth camera (**`ROARM_MODEL=roarm_m3` only**):
+
+```bash
+ros2 launch roarm_gazebo bringup_gazebo.launch.py use_rviz:=true \
+  rviz_config:=roarm_description add_depth_camera:=true
+```
+
 ### MoveIt2 with Gazebo (drag-and-plan in sim)
 
 Starts **`move_group`** plus the full Gazebo bringup with MoveIt RViz config.
@@ -102,7 +109,7 @@ Workflow matches [MoveIt2 — RViz MotionPlanning Walkthrough](moveit2.md#rviz-m
 | `gazebo_ros2_control` (in URDF) | Simulated hardware interface + `controller_manager` |
 | `robot_state_publisher` | URDF + `/joint_states` → TF (`use_sim_time`) |
 | `spawner` nodes | `joint_state_broadcaster`, `hand_controller`, `gripper_controller` |
-| `ros_gz_bridge` | Harmonic only — bridges `/clock`, `/joint_states`, `/tf`, camera topics |
+| `ros_gz_bridge` | Harmonic only — bridges `/clock`, `/tf`, and camera topics (not `/joint_states`) |
 | `rviz2` | Selected by **`rviz_config`** (when `use_rviz:=true`) |
 
 **`moveit_gazebo.launch.py`** adds:
@@ -128,16 +135,23 @@ flowchart LR
   HC --> GZ --> SIM
 ```
 
-On Harmonic, **`ros_gz_bridge`** also forwards `/joint_states` and `/clock` between GZ and ROS.
+On Harmonic, **`ros_gz_bridge`** forwards `/clock`, `/tf`, and cameras. **`/joint_states`** come from **`joint_state_broadcaster`** (ros2_control), not the bridge.
+
+Camera bridge mapping (Harmonic):
+
+| ROS topic | GZ topic |
+|-----------|----------|
+| `/image_raw`, `/camera_info` | `/cam/image`, `/cam/camera_info` |
+| `/oak/image_raw`, `/oak/camera_info`, `/oak/depth/image_raw` | `/hand_oak/image`, `/hand_oak/camera_info`, `/hand_oak/depth_image` |
 
 ### Launch arguments (`bringup_gazebo.launch.py`)
 
 | Argument | Default | Values / notes |
 |----------|---------|----------------|
 | `use_rviz` | `false` | `true` — open RViz |
-| `rviz_config` | `roarm_description` | `roarm_description`, `roarm_moveit`, `roarm_moveit_servo`, `roarm_moveit_mtc_demo` |
-| `add_camera` | `false` | `true` — mount simulated color camera in URDF |
-| `add_depth_camera` | `false` | `true` — mount simulated depth camera in URDF (`depth_camera_link`) |
+| `rviz_config` | `roarm_description` | `roarm_description`, `roarm_moveit`, `roarm_moveit_mtc_demo` |
+| `add_camera` | `false` | `true` — mount simulated color camera in URDF (`camera_link`) |
+| `add_depth_camera` | `false` | `true` — mount simulated depth camera (**roarm_m3 only**; roarm_m2 keeps the arg but does not mount) |
 
 ---
 
@@ -153,7 +167,7 @@ On Harmonic, **`ros_gz_bridge`** also forwards `/joint_states` and `/clock` betw
 | RViz model missing | **Fixed Frame** → `world`; for MoveIt path, confirm `use_rviz:=true` |
 | Planning works, nothing moves in Gazebo | Controllers not spawned — read launch log for `spawner` errors |
 | Real arm twitches while sim is running | Stop **`roarm_driver`** — you should not run driver and Gazebo together |
-| Harmonic: no `/joint_states` | Check `ros_gz_bridge` and `config/ros_gz_bridge.yaml`; verify `GZ_VERSION=harmonic` |
+| Harmonic: no `/joint_states` | Confirm `joint_state_broadcaster` spawned; check controller_manager logs — joint states are **not** bridged from GZ |
 | Wrong gripper mesh (roarm_m2) | Set **`GRIPPER_TYPE`** and relaunch — see [Robot Description](description.md) |
 
 ---

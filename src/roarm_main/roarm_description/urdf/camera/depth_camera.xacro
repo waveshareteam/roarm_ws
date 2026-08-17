@@ -13,14 +13,14 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="file://$(find ugv_description)/meshes/sensors/3d_camera_link.stl" />
+      <mesh filename="file://$(find roarm_description)/meshes/camera/3d_camera_link.stl" />
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="file://$(find ugv_description)/meshes/sensors/3d_camera_link.stl" />
+      <mesh filename="file://$(find roarm_description)/meshes/camera/3d_camera_link.stl" />
     </geometry>
   </collision>
 </link>
@@ -52,14 +52,14 @@
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="file://$(find ugv_description)/meshes/sensors/3d_camera_link.stl" />
+      <mesh filename="file://$(find roarm_description)/meshes/camera/3d_camera_link.stl" />
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="file://$(find ugv_description)/meshes/sensors/3d_camera_link.stl" />
+      <mesh filename="file://$(find roarm_description)/meshes/camera/3d_camera_link.stl" />
     </geometry>
   </collision>
 </link>

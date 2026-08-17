@@ -15,6 +15,7 @@ def launch_setup(context, *args, **kwargs):
     share_dir = get_package_share_directory('roarm_description')
     ROARM_MODEL = os.environ['ROARM_MODEL']
     GRIPPER_TYPE = os.environ['GRIPPER_TYPE']
+    GZ_VERSION = os.environ.get('GZ_VERSION', 'classic')
 
     xacro_file_name = ROARM_MODEL + '.xacro'
     xacro_file = os.path.join(
@@ -24,6 +25,7 @@ def launch_setup(context, *args, **kwargs):
 
     mappings = {
                 "use_gazebo": "false",
+                "GZ_VERSION": GZ_VERSION,
                 "add_depth_camera": add_depth_camera,
                 "add_camera": add_camera,
                 "gripper_type": GRIPPER_TYPE,

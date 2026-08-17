@@ -135,7 +135,7 @@ bool isTargetPoseCollidingInEEF(const planning_scene::PlanningSceneConstPtr& sce
 			pending_links.clear();
 		}
 	}
-	
+
 	// check collision with the world using the padded version
 	collision_detection::CollisionRequest req;
 	collision_detection::CollisionResult result;
@@ -235,33 +235,6 @@ bool ComputeIK::canCompute() const {
 	return !upstream_solutions_.empty() || WrapperBase::canCompute();
 }
 
-const Eigen::Isometry3d getFrameTransform(
-    const planning_scene::PlanningSceneConstPtr& scene,
-    const std::string& reference_frame,
-    const std::string& target_frame)
-{
-    const moveit::core::RobotState& state = scene->getCurrentState();
-    Eigen::Isometry3d tf_reference_world;
-    Eigen::Isometry3d tf_target_world;
-    try
-    {
-        tf_reference_world = scene->getFrameTransform(reference_frame);
-    }
-    catch (const std::exception& e)
-    {
-        throw std::runtime_error("Failed to get transform for reference frame: " + reference_frame + "\n" + e.what());
-    }
-    try
-    {
-        tf_target_world = scene->getFrameTransform(target_frame);
-    }
-    catch (const std::exception& e)
-    {
-        throw std::runtime_error("Failed to get transform for target frame: " + target_frame + "\n" + e.what());
-    }
-    return tf_reference_world.inverse() * tf_target_world;
-}
-
 void ComputeIK::compute() {
 	if (WrapperBase::canCompute())
 		WrapperBase::compute();
@@ -285,37 +258,43 @@ void ComputeIK::compute() {
 	const moveit::core::JointModelGroup* jmg = nullptr;
 	std::string msg;
 
+	auto report_failure = [&s, this](const std::string& msg) {
+		planning_scene::PlanningScenePtr scene = s.start()->scene()->diff();
+		SubTrajectory solution;
+		solution.markAsFailure(msg);
+		spawn(InterfaceState(scene), std::move(solution));
+	};
+
 	if (!validateEEF(props, robot_model, eef_jmg, &msg)) {
-		RCLCPP_WARN_STREAM(LOGGER, msg);
+		report_failure(msg);
 		return;
 	}
 	if (!validateGroup(props, robot_model, eef_jmg, jmg, &msg)) {
-		RCLCPP_WARN_STREAM(LOGGER, msg);
+		report_failure(msg);
 		return;
 	}
 	if (!eef_jmg && !jmg) {
-		RCLCPP_WARN_STREAM(LOGGER, "Neither eef nor group are well defined");
+		report_failure("Neither eef nor group are well defined");
 		return;
 	}
 	properties().property("timeout").setDefaultValue(jmg->getDefaultIKTimeout());
 
 	// extract target_pose
 	geometry_msgs::msg::PoseStamped target_pose_msg = props.get<geometry_msgs::msg::PoseStamped>("target_pose");
-	
-	if (target_pose_msg.header.frame_id.empty())// if not provided, assume planning frame
+	if (target_pose_msg.header.frame_id.empty())  // if not provided, assume planning frame
 		target_pose_msg.header.frame_id = scene->getPlanningFrame();
 
 	Eigen::Isometry3d target_pose;
 	tf2::fromMsg(target_pose_msg.pose, target_pose);
 	if (target_pose_msg.header.frame_id != scene->getPlanningFrame()) {
 		if (!scene->knowsFrameTransform(target_pose_msg.header.frame_id)) {
-			RCLCPP_WARN_STREAM(LOGGER, "Unknown reference frame for target pose: " << target_pose_msg.header.frame_id);
+			report_failure(fmt::format("Unknown reference frame for target pose: '{}'", target_pose_msg.header.frame_id));
 			return;
 		}
 		// transform target_pose w.r.t. planning frame
 		target_pose = scene->getFrameTransform(target_pose_msg.header.frame_id) * target_pose;
-		// target_pose = getFrameTransform(scene,"ugv_roarm_base_link",target_pose_msg.header.frame_id) * target_pose;
 	}
+
 	// determine IK link from ik_frame
 	const moveit::core::LinkModel* link = nullptr;
 	geometry_msgs::msg::PoseStamped ik_pose_msg;
@@ -324,33 +303,26 @@ void ComputeIK::compute() {
 		//  determine IK link from eef/group
 		if (!(link = eef_jmg ? robot_model->getLinkModel(eef_jmg->getEndEffectorParentGroup().second) :
 		                       jmg->getOnlyOneEndEffectorTip())) {
-			RCLCPP_WARN_STREAM(LOGGER, "Failed to derive IK target link");
+			report_failure("Failed to derive IK target link");
 			return;
 		}
 		ik_pose_msg.header.frame_id = link->getName();
 		ik_pose_msg.pose.orientation.w = 1.0;
 	} else {
 		ik_pose_msg = boost::any_cast<geometry_msgs::msg::PoseStamped>(value);
-
 		Eigen::Isometry3d ik_pose;
 		tf2::fromMsg(ik_pose_msg.pose, ik_pose);
 
 		if (!scene->getCurrentState().knowsFrameTransform(ik_pose_msg.header.frame_id)) {
-			RCLCPP_WARN_STREAM(LOGGER, fmt::format("ik frame unknown in robot: '{}'", ik_pose_msg.header.frame_id));
+			report_failure(fmt::format("ik frame unknown in robot: '{}'", ik_pose_msg.header.frame_id));
 			return;
 		}
-
 		ik_pose = scene->getCurrentState().getFrameTransform(ik_pose_msg.header.frame_id) * ik_pose;
-
-		// ik_pose = getFrameTransform(scene,"ugv_roarm_base_link",ik_pose_msg.header.frame_id) * ik_pose;
 
 		link = scene->getCurrentState().getRigidlyConnectedParentLinkModel(ik_pose_msg.header.frame_id);
 
 		// transform target pose such that ik frame will reach there if link does
 		target_pose = target_pose * ik_pose.inverse() * scene->getCurrentState().getFrameTransform(link->getName());
-		// target_pose = target_pose * ik_pose.inverse() * getFrameTransform(scene,"ugv_roarm_base_link",link->getName());
-
-		// target_pose = scene->getCurrentState().getFrameTransform("ugv_roarm_base_link").inverse() * target_pose;
 	}
 
 	// validate placed link for collisions
@@ -361,19 +333,8 @@ void ComputeIK::compute() {
 
 	// frames at target pose and ik frame
 	std::deque<visualization_msgs::msg::Marker> frame_markers;
-
-	geometry_msgs::msg::PoseStamped temp_pose_msg=ik_pose_msg;  
-	Eigen::Isometry3d tf_world_to_base = scene->getCurrentState().getFrameTransform("base_link").inverse();
-	Eigen::Isometry3d tf_ik_pose;
-	tf2::fromMsg(temp_pose_msg.pose, tf_ik_pose);
-	Eigen::Isometry3d tf_in_base = tf_world_to_base * tf_ik_pose;
-	geometry_msgs::msg::PoseStamped transformed_pose = temp_pose_msg;
-	transformed_pose.pose = tf2::toMsg(tf_in_base);
-	// ik_pose_msg = transformed_pose;
-
 	rviz_marker_tools::appendFrame(frame_markers, target_pose_msg, 0.1, "target frame");
 	rviz_marker_tools::appendFrame(frame_markers, ik_pose_msg, 0.1, "ik frame");
-	
 	// end-effector markers
 	std::deque<visualization_msgs::msg::Marker> eef_markers;
 	// visualize placed end-effector
@@ -461,9 +422,6 @@ void ComputeIK::compute() {
 		tried_current_state_as_seed = true;
 
 		size_t previous = ik_solutions.size();
-		
-		target_pose = tf_world_to_base * target_pose;
-
 		bool succeeded = sandbox_state.setFromIK(jmg, target_pose, link->getName(), remaining_time, is_valid);
 
 		auto now = std::chrono::steady_clock::now();

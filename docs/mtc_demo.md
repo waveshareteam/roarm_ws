@@ -97,6 +97,14 @@ To run a **different** demo: **`Ctrl+C`** Terminal 2 only, launch another `exe:=
 
 T1 includes `roarm_moveit.launch.py` with `rviz_config:=roarm_moveit_mtc_demo` — same `move_group` / `ros2_control` stack as [MoveIt2](moveit2.md), plus the MTC execute capability.
 
+### Launch arguments (`demo.launch.py`)
+
+| Argument | Default | Notes |
+|----------|---------|-------|
+| `use_rviz` | `false` | `true` — open RViz (`mtc.rviz`) |
+| `add_camera` | `false` | `true` — mount hand camera in URDF |
+| `add_depth_camera` | `false` | `true` — mount depth camera (**roarm_m3 only**; no-op on roarm_m2) |
+
 **Data Transfer Process**
 
 ```mermaid

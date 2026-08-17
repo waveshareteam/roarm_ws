@@ -118,7 +118,7 @@ Multi-stage pick/place and Cartesian demos.
 
 ### [7. Vision & Pick / Place](vision.md)
 
-USB perception → TF → **`/pick_place_cmd`** on the real arm. T1: **`command_control.launch.py use_rviz:=true`** (recommended for debugging) + T2: `demo.launch.py`.
+USB perception → TF → **`/pick_place_cmd`** on the real arm. T1: **`command_control.launch.py use_rviz:=true add_camera:=true`** (camera mount required for `camera_link`) + T2: `demo.launch.py`.
 
 ### [8. Gazebo Simulation](gazebo.md)
 

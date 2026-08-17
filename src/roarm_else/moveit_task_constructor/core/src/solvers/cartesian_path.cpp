@@ -117,20 +117,12 @@ PlannerInterface::Result CartesianPath::plan(const planning_scene::PlanningScene
 	};
 
 	std::vector<moveit::core::RobotStatePtr> trajectory;
-
-	Eigen::Isometry3d getCurrentStateNonConst = sandbox_scene->getCurrentStateNonConst().getGlobalLinkTransform(&link);
-	std::cout << "getCurrentStateNonConst" << getCurrentStateNonConst.translation().transpose() << std::endl;
-	std::cout << "target" << target.translation().transpose() << std::endl;
-	
-
 	double achieved_fraction = moveit::core::CartesianInterpolator::computeCartesianPath(
 	    &(sandbox_scene->getCurrentStateNonConst()), jmg, trajectory, &link, target, true,
 	    moveit::core::MaxEEFStep(props.get<double>("step_size")),
 	    moveit::core::JumpThreshold(props.get<double>("jump_threshold")), is_valid,
 	    props.get<kinematics::KinematicsQueryOptions>("kinematics_options"),
 	    props.get<kinematics::KinematicsBase::IKCostFn>("kinematics_cost_fn"), offset);
-
-	std::cout << "achieved_fraction" << achieved_fraction << std::endl;
 
 	assert(!trajectory.empty());  // there should be at least the start state
 	result = std::make_shared<robot_trajectory::RobotTrajectory>(sandbox_scene->getRobotModel(), jmg);

@@ -61,4 +61,34 @@
     <disable_collisions link1="link3" link2="link4" reason="Adjacent"/>
     <disable_collisions link1="link3" link2="link5" reason="Never"/>
     <disable_collisions link1="link4" link2="link5" reason="Adjacent"/>
+    <!-- Hand camera (add_camera:=true): sim uses cam_base_hand; hardware uses camera_link -->
+    <disable_collisions link1="cam_base_hand" link2="base_link" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="link1" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="link2" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="link3" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="link4" reason="Never"/>
+    <disable_collisions link1="cam_base_hand" link2="link5" reason="Adjacent"/>
+    <disable_collisions link1="cam_base_hand" link2="gripper_link" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="base_link" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="link1" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="link2" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="link3" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="link4" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="link5" reason="Adjacent"/>
+    <disable_collisions link1="camera_link" link2="gripper_link" reason="Never"/>
+    <!-- Depth camera (add_depth_camera:=true) -->
+    <disable_collisions link1="oak_base_hand" link2="base_link" reason="Never"/>
+    <disable_collisions link1="oak_base_hand" link2="link1" reason="Never"/>
+    <disable_collisions link1="oak_base_hand" link2="link2" reason="Never"/>
+    <disable_collisions link1="oak_base_hand" link2="link3" reason="Never"/>
+    <disable_collisions link1="oak_base_hand" link2="link4" reason="Never"/>
+    <disable_collisions link1="oak_base_hand" link2="link5" reason="Adjacent"/>
+    <disable_collisions link1="oak_base_hand" link2="gripper_link" reason="Never"/>
+    <disable_collisions link1="depth_camera_link" link2="base_link" reason="Never"/>
+    <disable_collisions link1="depth_camera_link" link2="link1" reason="Never"/>
+    <disable_collisions link1="depth_camera_link" link2="link2" reason="Never"/>
+    <disable_collisions link1="depth_camera_link" link2="link3" reason="Never"/>
+    <disable_collisions link1="depth_camera_link" link2="link4" reason="Never"/>
+    <disable_collisions link1="depth_camera_link" link2="link5" reason="Adjacent"/>
+    <disable_collisions link1="depth_camera_link" link2="gripper_link" reason="Never"/>
 </robot>

@@ -73,6 +73,14 @@ Right after launch, the arm often **moves to `initial_positions.yaml`** on its o
 | `setgrippercmd` | Bridges **`/gripper_cmd`** → gripper controller |
 | `rviz2` | **`command_control.rviz`** (when `use_rviz:=true`) |
 
+### Launch arguments (`command_control.launch.py`)
+
+| Argument | Default | Notes |
+|----------|---------|-------|
+| `use_rviz` | `false` | `true` — open RViz (`command_control.rviz`) |
+| `add_camera` | `false` | `true` — mount hand camera in URDF (**required** for [Vision](vision.md)) |
+| `add_depth_camera` | `false` | `true` — mount depth camera (**roarm_m3 only**; no-op on roarm_m2) |
+
 ---
 
 **Data Transfer Process**
@@ -272,7 +280,7 @@ ros2 topic pub /gripper_cmd std_msgs/msg/Float32 "{data: 0.5}" -1
 | [Hardware Driver](driver_control.md) | USB serial and **`roarm_driver`** on **T0** |
 | [MoveIt2](moveit2.md) | Drag-and-plan in RViz |
 | [Keyboard & Gamepad Control](keyboard_control.md) | Real-time jog via MoveIt Servo |
-| [Vision](vision.md) | Pick-place via `/pick_place_cmd` — run Cmd with **`use_rviz:=true`** on T1 for TF and model debugging |
+| [Vision](vision.md) | Pick-place via `/pick_place_cmd` — run Cmd with **`use_rviz:=true add_camera:=true`** on T1 so `camera_link` exists in TF |
 | [MTC Demo](mtc_demo.md) | Multi-stage MoveIt Task Constructor demos |
 
 When switching tutorials, stop the current launch with **`Ctrl+C`**, but usually **keep `roarm_driver` running** unless the next chapter says otherwise.

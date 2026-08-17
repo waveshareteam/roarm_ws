@@ -4,33 +4,36 @@
   ros_type_name: "rosgraph_msgs/msg/Clock"
   gz_type_name: "gz.msgs.Clock"
   direction: GZ_TO_ROS
-- ros_topic_name: "/joint_states"
-  gz_topic_name: "/joint_states"
-  ros_type_name: "sensor_msgs/msg/JointState"
-  gz_type_name: "gz.msgs.Model"
-  direction: GZ_TO_ROS
+# joint_states come from joint_state_broadcaster (ros2_control), not GZ bridge
 - ros_topic_name: "/tf"
   gz_topic_name: "/tf"
   ros_type_name: "tf2_msgs/msg/TFMessage"
   gz_type_name: "gz.msgs.Pose_V"
-  direction: GZ_TO_ROS  
+  direction: GZ_TO_ROS
+# Hand RGB camera (camera.gazebo.xacro topic: cam/image)
 - ros_topic_name: "/image_raw"
-  gz_topic_name: "/image_raw"
+  gz_topic_name: "/cam/image"
   ros_type_name: "sensor_msgs/msg/Image"
   gz_type_name: "gz.msgs.Image"
   direction: GZ_TO_ROS
-- ros_topic_name: "/oak/image_raw"
-  gz_topic_name: "/oak/image"
-  ros_type_name: "sensor_msgs/msg/Image"
-  gz_type_name: "gz.msgs.Image"
-  direction: GZ_TO_ROS 
-- ros_topic_name: "/oak/camera_info"
-  gz_topic_name: "/oak/camera_info"
+- ros_topic_name: "/camera_info"
+  gz_topic_name: "/cam/camera_info"
   ros_type_name: "sensor_msgs/msg/CameraInfo"
   gz_type_name: "gz.msgs.CameraInfo"
-  direction: GZ_TO_ROS        
-- ros_topic_name: "/oak/depth/image_raw"
-  gz_topic_name: "/oak/depth_image"
+  direction: GZ_TO_ROS
+# Hand OAK / RGBD (depth_camera.gazebo.xacro topic: hand_oak)
+- ros_topic_name: "/oak/image_raw"
+  gz_topic_name: "/hand_oak/image"
   ros_type_name: "sensor_msgs/msg/Image"
   gz_type_name: "gz.msgs.Image"
-  direction: GZ_TO_ROS   
+  direction: GZ_TO_ROS
+- ros_topic_name: "/oak/camera_info"
+  gz_topic_name: "/hand_oak/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/oak/depth/image_raw"
+  gz_topic_name: "/hand_oak/depth_image"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS

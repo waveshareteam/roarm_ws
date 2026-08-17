@@ -1,13 +1,15 @@
 <?xml version="1.0" ?>
 <robot name="roarm_m2" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-<xacro:macro name="add_depth_camera" params="add_depth_camera"></xacro:macro>
+<!-- Declared here: this file is also an entry for roarm_description/display.launch.py -->
 <xacro:arg name="add_depth_camera" default="false"/>
-<xacro:property name="add_depth_camera" value="$(arg add_depth_camera)"/>
+<!-- M2 depth-camera mount not designed yet; arg kept for launch compatibility. -->
 
-<xacro:macro name="add_camera" params="add_camera"></xacro:macro>
 <xacro:arg name="add_camera" default="false"/>
 <xacro:property name="add_camera" value="$(arg add_camera)"/>
+
+<xacro:arg name="GZ_VERSION" default="classic"/>
+<xacro:property name="GZ_VERSION" value="$(arg GZ_VERSION)"/>
 
 <xacro:arg name="gripper_type" default="angular_gear"/>
 <xacro:property name="gripper_type" value="$(arg gripper_type)"/>
@@ -15,21 +17,6 @@
 <xacro:include filename="$(find roarm_description)/urdf/materials.xacro" />
 <xacro:include filename="$(find roarm_description)/urdf/gazebo/roarm_m2.trans" />
 <xacro:include filename="$(find roarm_description)/urdf/gazebo/roarm_m2.gazebo" />
-
-<xacro:if value="${add_depth_camera}">
-<xacro:include filename="$(find roarm_description)/urdf/camera/depth_camera.xacro" />
-<xacro:include filename="$(find roarm_description)/urdf/camera/depth_camera.gazebo.xacro" />
-<!-- <xacro:oak use_gazebo="true">
-  <parent link="link4" />
-  <origin xyz="-0.066257 -0.0523 0" rpy="1.5708 0 -1.5708" />
-  oak cam in hand
-</xacro:oak>   -->
-<xacro:oak use_gazebo="true">
-  <parent link="base_link" />
-  <origin xyz="0.06531 0 0.021953" rpy="0 0 0" />
-  <!-- usb cam out hand -->
-</xacro:oak> 
-</xacro:if>
 
 <xacro:if value="${add_camera}">
 <xacro:include filename="$(find roarm_description)/urdf/camera/camera.xacro" />

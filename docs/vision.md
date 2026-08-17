@@ -78,13 +78,17 @@ Do **not** call `/move_joint_cmd` while a vision pick is running. You only need 
 
 Pick an `exe:=` value from [Available perception nodes](#available-perception-nodes-exe) below.
 
-**Standalone RoArm** (fixed base, not on a UGV) — set **`base_frame`** to the arm base:
+**Standalone RoArm** (fixed base) — default **`base_frame`** is already `base_link`:
 
 ```bash
-ros2 launch roarm_vision demo.launch.py exe:=apriltag_detect base_frame:=base_link
+ros2 launch roarm_vision demo.launch.py exe:=apriltag_detect
 ```
 
-**UGV + RoArm** setups can keep the default `base_frame:=ugv_roarm_base_link`.
+**UGV + RoArm** — pass the arm root on the chassis:
+
+```bash
+ros2 launch roarm_vision demo.launch.py exe:=apriltag_detect base_frame:=ugv_roarm_base_link
+```
 
 If the program no longer needs to run, use **`Ctrl+C`** to close the session.
 
@@ -130,7 +134,7 @@ flowchart LR
 | Argument | Default | Notes |
 |----------|---------|-------|
 | `exe` | *(required)* | `apriltag_detect`, `color_block_detect` |
-| `base_frame` | `ugv_roarm_base_link` | Arm base for object pose lookup — use **`base_link`** on a fixed RoArm |
+| `base_frame` | `base_link` | Arm base for object pose lookup — UGV: **`ugv_roarm_base_link`** |
 | `cam_frame` | `camera_link` | Camera optical frame (must exist in TF) |
 | `color` | `green` | HSV target for `color_block_detect` (`lab_tool_colors.json`) |
 

@@ -24,15 +24,16 @@ roarm_description/
 │   ├── gripper/
 │   │   ├── gripper.xacro       # roarm_m2 — angular_direct
 │   │   └── gripper_a.xacro     # roarm_m2 — angular_gear (mimic finger joints)
-│   ├── camera/                 # optional RGB camera mounts
+│   ├── camera/                 # optional RGB (`camera.xacro`) and depth (`depth_camera.xacro`) mounts
 │   ├── gazebo/                 # Gazebo plugins & transmissions
 │   └── materials.xacro
 ├── meshes/
+│   ├── camera/                 # hand RGB / depth camera STL
 │   ├── roarm_m2/
 │   ├── roarm_m3/
 │   └── gripper/
 ├── launch/
-│   └── display.launch.py       # joint_state_publisher_gui (RViz: use_rviz:=true)
+│   └── display.launch.py       # joint_state_publisher_gui (RViz: use_rviz:=true; optional add_camera / add_depth_camera)
 └── rviz/
     └── view_description.rviz
 ```
@@ -41,7 +42,8 @@ roarm_description/
 |------|---------|
 | `urdf/bases/*.xacro` | Main robot model loaded by `ROARM_MODEL` |
 | `urdf/gripper/` | roarm_m2 gripper variant selected by `GRIPPER_TYPE` |
-| `meshes/` | STL visual/collision geometry |
+| `urdf/camera/` | Optional hand RGB / depth camera xacro (enabled via launch args) |
+| `meshes/` | STL visual/collision geometry (arm, gripper, camera) |
 | `launch/display.launch.py` | Joint sliders + `robot_state_publisher`; RViz when **`use_rviz:=true`** |
 
 MoveIt adds planning and simulation settings under `roarm_moveit/config/<ROARM_MODEL>/` using the **same link and joint names**.
@@ -118,6 +120,14 @@ Launch the model with RViz and the joint slider window:
 ros2 launch roarm_description display.launch.py use_rviz:=true
 ```
 
+Optional hand camera in the displayed URDF:
+
+```bash
+ros2 launch roarm_description display.launch.py use_rviz:=true add_camera:=true
+```
+
+Depth camera mount is **roarm_m3 only** (`add_depth_camera:=true`; no-op on roarm_m2).
+
 If the program no longer needs to run, please use **`Ctrl+C`** to close the running session.
 
 ---
@@ -130,6 +140,15 @@ If the program no longer needs to run, please use **`Ctrl+C`** to close the runn
 | `joint_state_publisher` | Publishes `joint_states` without a GUI when **`gui:=false`** |
 | `robot_state_publisher` | Publishes TF from URDF + `joint_states` (always started) |
 | `rviz2` | 3D visualization when **`use_rviz:=true`** (default is `false`) |
+
+### Launch arguments (`display.launch.py`)
+
+| Argument | Default | Notes |
+|----------|---------|-------|
+| `use_rviz` | `false` | `true` — open RViz |
+| `gui` | `true` | `false` — no joint slider GUI |
+| `add_camera` | `false` | `true` — mount hand RGB camera |
+| `add_depth_camera` | `false` | `true` — mount depth camera (**roarm_m3 only**) |
 
 Sliders publish on **`/joint_states`**. **`robot_state_publisher`** updates TF immediately; with **`use_rviz:=true`**, the RViz model follows the same angles.  
 With **`roarm_driver`** running, the physical arm follows the same angles — see [Hardware Driver](driver_control.md).

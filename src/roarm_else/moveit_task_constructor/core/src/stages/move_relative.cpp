@@ -47,33 +47,6 @@
 #include <tf2_eigen/tf2_eigen.h>
 #endif
 
-const Eigen::Isometry3d getFrameTransform(
-    const planning_scene::PlanningSceneConstPtr& scene,
-    const std::string& reference_frame,
-    const std::string& target_frame)
-{
-    const moveit::core::RobotState& state = scene->getCurrentState();
-    Eigen::Isometry3d tf_reference_world;
-    Eigen::Isometry3d tf_target_world;
-    try
-    {
-        tf_reference_world = scene->getFrameTransform(reference_frame);
-    }
-    catch (const std::exception& e)
-    {
-        throw std::runtime_error("Failed to get transform for reference frame: " + reference_frame + "\n" + e.what());
-    }
-    try
-    {
-        tf_target_world = scene->getFrameTransform(target_frame);
-    }
-    catch (const std::exception& e)
-    {
-        throw std::runtime_error("Failed to get transform for target frame: " + target_frame + "\n" + e.what());
-    }
-    return tf_reference_world.inverse() * tf_target_world;
-}
-
 namespace moveit {
 namespace task_constructor {
 namespace stages {
@@ -252,12 +225,10 @@ bool MoveRelative::compute(const InterfaceState& state, planning_scene::Planning
 		Eigen::Vector3d angular;  // angular rotation
 		double linear_norm = 0.0, angular_norm = 0.0;
 		Eigen::Isometry3d target_eigen;
-		Eigen::Isometry3d target_eigen_temp;
 
 		try {  // try to extract Twist
 			const geometry_msgs::msg::TwistStamped& target = boost::any_cast<geometry_msgs::msg::TwistStamped>(direction);
 			const Eigen::Isometry3d& frame_pose = scene->getFrameTransform(target.header.frame_id);
-
 			tf2::fromMsg(target.twist.linear, linear);
 			tf2::fromMsg(target.twist.angular, angular);
 
@@ -302,8 +273,6 @@ bool MoveRelative::compute(const InterfaceState& state, planning_scene::Planning
 			const geometry_msgs::msg::Vector3Stamped& target =
 			    boost::any_cast<geometry_msgs::msg::Vector3Stamped>(direction);
 			const Eigen::Isometry3d& frame_pose = scene->getFrameTransform(target.header.frame_id);
-			// const Eigen::Isometry3d& frame_pose = getFrameTransform(scene,"ugv_roarm_base_link",target.header.frame_id);
-
 			tf2::fromMsg(target.vector, linear);
 
 			// use max distance?
@@ -320,12 +289,6 @@ bool MoveRelative::compute(const InterfaceState& state, planning_scene::Planning
 			// compute target transform for ik_frame applying delta transform of twist
 			linear = frame_pose.linear() * linear;
 			target_eigen = Eigen::Translation3d(linear) * ik_pose_world;
-			target_eigen_temp=target_eigen;
-			std::cout << "frame_pose" << frame_pose.translation().transpose() << std::endl;
-			std::cout << "linear" << Eigen::Translation3d(linear).translation().transpose() << std::endl;
-			std::cout << "ik_pose_world" << ik_pose_world.translation().transpose() << std::endl;
-			std::cout << "target_eigen" << target_eigen.translation().transpose() << std::endl;
-
 		} catch (const boost::bad_any_cast&) {
 			solution.markAsFailure(std::string("invalid direction type: ") + direction.type().name());
 			return false;
@@ -334,9 +297,7 @@ bool MoveRelative::compute(const InterfaceState& state, planning_scene::Planning
 	COMPUTE:
 		// offset from link to ik_frame
 		const Eigen::Isometry3d& offset = scene->getCurrentState().getGlobalLinkTransform(link).inverse() * ik_pose_world;
-		std::cout << "offset" << offset.translation().transpose() << std::endl;
-		target_eigen = scene->getCurrentState().getFrameTransform("base_link").inverse() *target_eigen;
-		
+
 		auto result =
 		    planner_->plan(state.scene(), *link, offset, target_eigen, jmg, timeout, robot_trajectory, path_constraints);
 		success = bool(result);
@@ -348,11 +309,7 @@ bool MoveRelative::compute(const InterfaceState& state, planning_scene::Planning
 			                                                                  // returned from planning
 			moveit::core::RobotStatePtr& reached_state = robot_trajectory->getLastWayPointPtr();
 			reached_state->updateLinkTransforms();
-			// const Eigen::Isometry3d& reached_pose = reached_state->getGlobalLinkTransform(link) * offset;
-
-			const Eigen::Isometry3d& reached_pose = scene->getCurrentState().getFrameTransform("base_link").inverse() *(reached_state->getGlobalLinkTransform(link) * offset);
-			std::cout << "reached_pose" << reached_pose.translation().transpose() << std::endl;
-			std::cout << "ik_pose_world" << ik_pose_world.translation().transpose() << std::endl;
+			const Eigen::Isometry3d& reached_pose = reached_state->getGlobalLinkTransform(link) * offset;
 
 			double distance = 0.0;
 			if (use_rotation_distance) {
