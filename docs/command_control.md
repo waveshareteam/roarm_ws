@@ -83,7 +83,7 @@ Right after launch, the arm often **moves to `initial_positions.yaml`** on its o
 
 ---
 
-**Data Transfer Process**
+**Data transfer process**
 
 ```mermaid
 flowchart LR

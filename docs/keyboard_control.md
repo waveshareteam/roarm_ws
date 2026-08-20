@@ -71,7 +71,7 @@ Right after launch, the arm often **moves to `initial_positions.yaml`** on its o
 | `setgrippercmd` | Bridges **`/gripper_cmd`** to the gripper controller |
 | `rviz2` | **`servo_control.rviz`** (when `use_rviz:=true`) |
 
-**Data Transfer Process**
+**Data transfer process**
 
 ```mermaid
 flowchart LR

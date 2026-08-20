@@ -89,6 +89,9 @@ def launch_setup(context, *args, **kwargs):
         ),
         launch_arguments={
             'rviz_config': "roarm_moveit_servo",
+            'use_rviz': context.launch_configurations['use_rviz'],
+            'add_camera': add_camera,
+            'add_depth_camera': add_depth_camera,
         }.items()
     )
         

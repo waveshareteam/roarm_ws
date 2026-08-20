@@ -158,12 +158,20 @@ With **`roarm_driver`** running, the physical arm follows the same angles — se
 
 ---
 
-**Data Transfer Process**
+**Data transfer process**
 
-```
-Joint State Publisher GUI  →  /joint_states  →  robot_state_publisher  →  TF  →  RViz model
-                              ↓
-                         roarm_driver (if running)  →  real arm
+```mermaid
+flowchart LR
+  GUI[Joint State Publisher GUI]
+  JS["/joint_states"]
+  RSP[robot_state_publisher]
+  TF[TF]
+  RVIZ[RViz model]
+  DRV[roarm_driver if running]
+  ARM[Physical RoArm]
+
+  GUI --> JS --> RSP --> TF --> RVIZ
+  JS --> DRV --> ARM
 ```
 
 1. Drag a **slider** → the node publishes joint angles on **`/joint_states`** (`sensor_msgs/JointState`).

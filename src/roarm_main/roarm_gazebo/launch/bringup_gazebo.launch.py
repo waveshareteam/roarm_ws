@@ -259,7 +259,7 @@ def generate_launch_description():
         # Argument to specify which RViz configuration to use
         DeclareLaunchArgument('rviz_config', default_value='roarm_description', description='Choose which rviz configuration to use: roarm_description, roarm_moveit, roarm_moveit_servo, roarm_moveit_mtc_demo'),
         DeclareLaunchArgument('add_depth_camera', default_value='false', description='Choose whether to add depth camera'),      
-        DeclareLaunchArgument('add_camera', default_value='false', description='Choose whether to add depth camera'),      
+        DeclareLaunchArgument('add_camera', default_value='false', description='Choose whether to add camera'),
         # Opaque function to execute the setup
         OpaqueFunction(function=launch_setup)
     ])

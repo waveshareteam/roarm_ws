@@ -54,6 +54,8 @@ def launch_setup(context, *args, **kwargs):
         launch_arguments={
             'rviz_config': 'roarm_moveit',
             'use_rviz': LaunchConfiguration('use_rviz'),
+            'add_camera': LaunchConfiguration('add_camera'),
+            'add_depth_camera': LaunchConfiguration('add_depth_camera'),
         }.items(),
     )
 
@@ -95,5 +97,7 @@ def launch_setup(context, *args, **kwargs):
 def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('use_rviz', default_value='true', description='Whether to launch RViz2'),
+        DeclareLaunchArgument('add_camera', default_value='false', description='Choose whether to add camera'),
+        DeclareLaunchArgument('add_depth_camera', default_value='false', description='Choose whether to add depth camera'),
         OpaqueFunction(function=launch_setup)
     ])

@@ -1,4 +1,4 @@
-# Roarm_ws Documentation
+# roarm_ws Documentation
 
 **roarm_ws** is a **ROS2 Humble** colcon workspace for **Waveshare RoArm ([roarm m2](https://www.waveshare.com/roarm-m2-s.htm) / [roarm m3](https://www.waveshare.com/roarm-m3.htm))**.
 It connects **RViz2** and **MoveIt2** to real hardware **over serial**, and optionally to camera-based pick-place and Gazebo simulation.

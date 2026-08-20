@@ -104,10 +104,7 @@ def launch_setup(context, *args, **kwargs):
 # Function to generate the launch description with configurable arguments
 def generate_launch_description():
     return LaunchDescription([
-        # Argument to specify whether to use RViz
-        DeclareLaunchArgument('use_rviz', default_value='false', description='Whether to launch RViz2'),
-        DeclareLaunchArgument('add_camera', default_value='false', description='Choose whether to add camera'),      
-        DeclareLaunchArgument('add_depth_camera', default_value='false', description='Choose whether to add depth camera'),      
-        # Opaque function to execute the setup
+        DeclareLaunchArgument('add_camera', default_value='false', description='Choose whether to add camera (also set on demo.launch.py T1)'),
+        DeclareLaunchArgument('add_depth_camera', default_value='false', description='Choose whether to add depth camera (also set on demo.launch.py T1)'),
         OpaqueFunction(function=launch_setup)
     ])

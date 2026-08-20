@@ -23,7 +23,7 @@ For ROS2 terms (nodes, topics), see [ROS2 Basics](ros2_basics.md).
 | Config | `serial_port` node parameters | Serial device path |
 | Config | `ROARM_MODEL` environment variable | roarm_m2 / roarm_m3 joint mapping |
 
-## Data Transfer Process
+## Data transfer process
 
 ```mermaid
 flowchart LR

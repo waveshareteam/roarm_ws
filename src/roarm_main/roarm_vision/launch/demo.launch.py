@@ -48,6 +48,7 @@ def generate_launch_description():
         output="screen",
         parameters=[{
             'color': LaunchConfiguration('color'),
+            'cam_frame': LaunchConfiguration('cam_frame'),
         }]
     )
 

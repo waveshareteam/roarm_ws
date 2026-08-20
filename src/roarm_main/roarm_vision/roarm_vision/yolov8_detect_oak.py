@@ -26,6 +26,7 @@ from collections import deque
 
 curpath = os.path.realpath(__file__)
 thisPath = os.path.dirname(curpath)
+_yolov8_blob = os.path.join(thisPath, "models", "oak", "model_yolov8n.blob")
 
 try:
     existing_mediamtx_pids = subprocess.check_output(
@@ -123,7 +124,7 @@ class OakYoloNode(Node):
         stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A)
         stereo.setOutputSize(monoLeft.getResolutionWidth(), monoLeft.getResolutionHeight())
 
-        spatialDetectionNetwork.setBlobPath("/home/ws/roarm_ws/src/roarm_main/roarm_vision/config/model_yolov8n.blob")
+        spatialDetectionNetwork.setBlobPath(_yolov8_blob)
         spatialDetectionNetwork.setConfidenceThreshold(0.5)
         spatialDetectionNetwork.setBoundingBoxScaleFactor(0.5)
         spatialDetectionNetwork.setDepthLowerThreshold(100)

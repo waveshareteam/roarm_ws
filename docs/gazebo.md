@@ -120,7 +120,7 @@ Workflow matches [MoveIt2 — RViz MotionPlanning Walkthrough](moveit2.md#rviz-m
 
 `moveit_gazebo.launch.py` includes `bringup_gazebo.launch.py` with **`rviz_config:=roarm_moveit`**.
 
-**Data Transfer Process**
+**Data transfer process**
 
 ```mermaid
 flowchart LR

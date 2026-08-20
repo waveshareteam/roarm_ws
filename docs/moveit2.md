@@ -64,7 +64,7 @@ Right after launch, the arm often **moves to `initial_positions.yaml`** on its o
 
 Planning uses the **`hand`** group (base → **`hand_tcp`**). The gripper is the separate **`gripper`** group — **`gripper_joint`** on roarm_m2, **`link5_to_gripper_link`** on roarm_m3.
 
-**Data Transfer Process**
+**Data transfer process**
 
 ```mermaid
 flowchart LR

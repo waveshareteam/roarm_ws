@@ -38,7 +38,7 @@ Both stacks share the same URDF, **`roarm_driver`**, and **`/joint_states`** pat
 | **Moves real arm?** | **Immediately** when service call succeeds (still through `roarm_driver`) | After you click **`Exec`** in RViz (still through `roarm_driver`) |
 | **Typical use** | Automation, teaching points, shell scripts, integration tests | Cartesian sequences, pick → lift → place, vision-linked MTC demos |
 
-**Data path on hardware:**
+**Data path (hardware):**
 
 - **MoveIt Cmd:** `roarmserver` → **`move_group`** → `hand_controller` → **`/joint_states`** → **`roarm_driver`** → ESP32.
 - **MTC:** T2 task executable (plan) → RViz **`Exec`** → **`move_group`** → `hand_controller` → **`/joint_states`** → **`roarm_driver`** → ESP32.
@@ -105,7 +105,9 @@ T1 includes `roarm_moveit.launch.py` with `rviz_config:=roarm_moveit_mtc_demo` �
 | `add_camera` | `false` | `true` — mount hand camera in URDF |
 | `add_depth_camera` | `false` | `true` — mount depth camera (**roarm_m3 only**; no-op on roarm_m2) |
 
-**Data Transfer Process**
+Camera args must match on **T1** (`demo.launch.py`) and **T2** (`run.launch.py`) so MoveIt and the task node share the same URDF/TF.
+
+**Data transfer process**
 
 ```mermaid
 flowchart LR

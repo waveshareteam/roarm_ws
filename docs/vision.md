@@ -105,7 +105,7 @@ If the program no longer needs to run, use **`Ctrl+C`** to close the session.
 | `setgrippercmd` | **`/gripper_cmd`** → gripper controller | T1 |
 | `roarm_driver` | Serial bridge | T0 |
 
-**Data Transfer Process**
+**Data transfer process**
 
 ```mermaid
 flowchart LR

@@ -1,4 +1,4 @@
-site_name: Roarm_ws Documentation
+site_name: roarm_ws Documentation
 site_description: ROS2 Humble colcon workspace (roarm_ws) + MoveIt2 for RoArm (roarm_m2 / roarm_m3; M2-GA = roarm_m2 + angular_gear)
 site_url: https://roarm-ws.readthedocs.io/
 
@@ -14,7 +14,7 @@ theme:
   highlightjs: true
 
 nav:
-  - Roarm_ws Documentation: index.md
+  - roarm_ws Documentation: index.md
   - Getting Started:
       - ROS2 Basics: ros2_basics.md
       - RoArm Basics: roarm_basics.md
@@ -34,11 +34,17 @@ markdown_extensions:
   - tables
   - attr_list
   - md_in_html
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_div_format
 
 extra_css:
   - stylesheets/extra.css
 
 extra_javascript:
+  - https://unpkg.com/mermaid@10/dist/mermaid.min.js
+  - javascripts/mermaid-init.js
   - javascripts/copy-button.js
   - javascripts/image-lightbox.js
