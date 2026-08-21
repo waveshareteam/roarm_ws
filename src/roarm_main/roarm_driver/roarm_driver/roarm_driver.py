@@ -15,7 +15,8 @@ class RoarmDriver(Node):
         serial_port_name = self.get_parameter('serial_port').value
         baud_rate = self.get_parameter('baud_rate').value
         self.roarm_type = os.environ['ROARM_MODEL']
-        self.roarm = roarm(roarm_type=self.roarm_type, port=serial_port_name, baudrate=baud_rate)
+        self.gripper_type = os.environ['GRIPPER_TYPE']
+        self.roarm = roarm(roarm_type=self.roarm_type, port=serial_port_name, baudrate=baud_rate,gripper_type=self.gripper_type)
         self.last_roarm_sent_data = None
 
         self.joint_states_sub = self.create_subscription(JointState, 'joint_states', self.joint_states_callback, 10)    
