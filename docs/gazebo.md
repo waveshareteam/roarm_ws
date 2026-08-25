@@ -149,7 +149,7 @@ Camera bridge mapping (Harmonic):
 | Argument | Default | Values / notes |
 |----------|---------|----------------|
 | `use_rviz` | `false` | `true` — open RViz |
-| `rviz_config` | `roarm_description` | `roarm_description`, `roarm_moveit`, `roarm_moveit_mtc_demo` |
+| `rviz_config` | `roarm_description` | `roarm_description`, `roarm_moveit`, `roarm_moveit_servo` (`servo_control.rviz`), `roarm_moveit_mtc_demo` |
 | `add_camera` | `false` | `true` — mount simulated color camera in URDF (`camera_link`) |
 | `add_depth_camera` | `false` | `true` — mount simulated depth camera (**roarm_m3 only**; roarm_m2 keeps the arg but does not mount) |
 

@@ -115,7 +115,7 @@ def launch_setup(context, *args, **kwargs):
     rviz_files= {
         "roarm_description": os.path.join(get_package_share_directory('roarm_description'), 'rviz','view_description.rviz'),
         "roarm_moveit": os.path.join(get_package_share_directory('roarm_moveit'), 'rviz','interact.rviz'),
-        "roarm_moveit_servo": os.path.join(get_package_share_directory('roarm_moveit_servo'), 'rviz','interact.rviz'),
+        "roarm_moveit_servo": os.path.join(get_package_share_directory('roarm_moveit_servo'), 'rviz','servo_control.rviz'),
         "roarm_moveit_mtc_demo": os.path.join(get_package_share_directory('roarm_moveit_mtc_demo'), 'rviz', 'mtc.rviz'),
     }
     # Get the plugin name based on the use_sim_time argument
