@@ -133,6 +133,7 @@ sudo apt-get install -y \
     ros-humble-depthai-ros || true
 
 sudo -E apt install -y \
+  ros-humble-ros2-control \
   ros-humble-ros2-controllers \
   ros-humble-gripper-controllers \
   ros-humble-joint-trajectory-controller \
